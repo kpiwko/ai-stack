@@ -1,0 +1,51 @@
+name: mcp-mysql
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - mcp/mysql/**
+      - .github/workflows/mcp-mysql.yaml
+    tags:
+      - 'mcp-mysql/v*'
+  pull_request:
+    paths:
+      - mcp/mysql/**
+      - .github/workflows/mcp-mysql.yaml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to ghcr.io
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/mcp-mysql
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=pr
+            type=match,pattern=mcp-mysql/v(.*),group=1
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./mcp/mysql
+          file: ./mcp/mysql/Containerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

@@ -1,0 +1,166 @@
+# Podman Compose — ai-stack local AI tooling stack
+#
+# macOS notes:
+#   - Named volumes are managed by the podman VM and work reliably.
+#   - Bind mounts under /Users/* are shared via virtio-fs (no extra config needed).
+#   - network_mode: host is NOT supported on macOS; use bridge networking.
+#   - host.containers.internal resolves to the macOS host from inside containers.
+#
+# Usage:
+#   podman compose up -d           # start everything
+#   podman compose stop <name>     # stop one service
+#   podman compose up -d <name>    # start one service
+#
+# Services:
+#   ai-beacon            — AI Beacon knowledge base UI (port 17090)
+#   devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (port 17301)
+#                             Requires devlake MySQL running separately via
+#                             ~/devel/work/devlake docker-compose-dev.yml (port 3306).
+#   devlake-prod-mysql-mcp  — MySQL MCP proxy for remote Konflux RDS (port 17300)
+#   gmail-mcp            — Gmail MCP server, streamable HTTP transport (port 17633)
+#   mcp-atlassian        — Jira MCP server, streamable HTTP transport (port 17000)
+#   gdrive-mcp           — Google Drive MCP server, streamable HTTP transport (port 17100)
+
+name: ai-stack
+
+networks:
+  ai-stack:
+    driver: bridge
+
+volumes:
+  ai-beacon-data: {}
+
+services:
+
+  ##############################################################################
+  # AI Beacon — knowledge base / prompt library UI
+  # URL: http://localhost:17090
+  ##############################################################################
+  ai-beacon:
+    image: ghcr.io/manusa/ai-beacon:latest
+    networks: [ai-stack]
+    ports:
+      - "17090:8080"
+    volumes:
+      - ai-beacon-data:/data
+    environment:
+      AI_BEACON_DATA_DIR: /data
+      AI_BEACON_AUTH_PASSWORD: ${AI_BEACON_AUTH_PASSWORD:-demo}
+    restart: unless-stopped
+
+  ##############################################################################
+  # devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (read-only)
+  # Image built by CI: ghcr.io/kpiwko/mcp-mysql:latest
+  # MCP endpoint: http://localhost:17301/mcp  (streamable HTTP transport)
+  #
+  # Connects to DevLake MySQL via host.containers.internal:3306.
+  # Start DevLake first: cd ~/devel/work/devlake && podman compose -f docker-compose-dev.yml up -d
+  ##############################################################################
+  devlake-local-mysql-mcp:
+    image: ghcr.io/kpiwko/mcp-mysql:latest
+    networks: [ai-stack]
+    ports:
+      - "17301:3000"
+    environment:
+      MYSQL_HOST: host.containers.internal
+      MYSQL_PORT: "3306"
+      MYSQL_USER: ${DEVLAKE_MYSQL_USER:-merico}
+      MYSQL_PASS: ${DEVLAKE_MYSQL_PASSWORD:-merico}
+      MYSQL_DB: lake
+      MYSQL_POOL_SIZE: "10"
+      MYSQL_QUERY_TIMEOUT: "30000"
+      MYSQL_CACHE_TTL: "60000"
+      ALLOW_INSERT_OPERATION: "false"
+      ALLOW_UPDATE_OPERATION: "false"
+      ALLOW_DELETE_OPERATION: "false"
+      IS_REMOTE_MCP: "true"
+      PORT: "3000"
+      REMOTE_SECRET_KEY: ${DEVLAKE_MCP_SECRET_KEY}
+    restart: unless-stopped
+
+  ##############################################################################
+  # devlake-prod-mysql-mcp — MySQL MCP proxy for remote Konflux RDS (read-only)
+  # Image built by CI: ghcr.io/kpiwko/mcp-mysql:latest
+  # MCP endpoint: http://localhost:17300/mcp  (streamable HTTP transport)
+  ##############################################################################
+  devlake-prod-mysql-mcp:
+    image: ghcr.io/kpiwko/mcp-mysql:latest
+    networks: [ai-stack]
+    ports:
+      - "17300:3000"
+    environment:
+      MYSQL_HOST: ${KONFLUX_MYSQL_HOST}
+      MYSQL_PORT: ${KONFLUX_MYSQL_PORT:-3306}
+      MYSQL_USER: ${KONFLUX_MYSQL_USER}
+      MYSQL_PASS: ${KONFLUX_MYSQL_PASS}
+      MYSQL_DB: ${KONFLUX_MYSQL_DB:-lake}
+      MYSQL_POOL_SIZE: "10"
+      MYSQL_QUERY_TIMEOUT: "30000"
+      MYSQL_CACHE_TTL: "60000"
+      ALLOW_INSERT_OPERATION: "false"
+      ALLOW_UPDATE_OPERATION: "false"
+      ALLOW_DELETE_OPERATION: "false"
+      IS_REMOTE_MCP: "true"
+      PORT: "3000"
+      REMOTE_SECRET_KEY: ${KONFLUX_MCP_SECRET_KEY}
+    restart: unless-stopped
+
+  ##############################################################################
+  # Gmail MCP — MCP server providing Gmail access via Device Authorization flow
+  # Image built by CI: ghcr.io/kpiwko/gmail-mcp-server:latest
+  # Auth page  : http://localhost:17633/auth  (first run — authorizes via browser)
+  # MCP endpoint: http://localhost:17633/mcp
+  ##############################################################################
+  gmail-mcp:
+    image: ghcr.io/kpiwko/gmail-mcp-server:latest
+    networks: [ai-stack]
+    ports:
+      - "17633:6633"
+    volumes:
+      - /Users/kpiwko/.config/gmail-mcp-server:/config/gmail-mcp-server
+    environment:
+      GMAIL_CLIENT_ID: ${GMAIL_CLIENT_ID}
+      GMAIL_CLIENT_SECRET: ${GMAIL_CLIENT_SECRET}
+      XDG_CONFIG_HOME: /config
+    restart: unless-stopped
+
+  ##############################################################################
+  # mcp-atlassian — Jira MCP server, streamable HTTP transport
+  # MCP endpoint: http://localhost:17000/mcp
+  # Register: claude mcp add --transport http --scope user mcp-atlassian http://localhost:17000/mcp
+  ##############################################################################
+  mcp-atlassian:
+    image: ghcr.io/sooperset/mcp-atlassian:latest
+    networks: [ai-stack]
+    ports:
+      - "17000:9000"
+    command: ["--transport", "streamable-http", "--port", "9000"]
+    environment:
+      JIRA_URL: ${JIRA_URL:-https://redhat.atlassian.net}
+      JIRA_USERNAME: ${JIRA_USERNAME}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
+    restart: unless-stopped
+
+  ##############################################################################
+  # gdrive-mcp — Google Drive MCP server, streamable HTTP transport
+  # Prereq: authenticate once outside the container first:
+  #   npx @piotr-agier/google-drive-mcp auth
+  # MCP endpoint: http://localhost:17100/mcp
+  # Register: claude mcp add --transport http --scope user gdrive http://localhost:17100/mcp
+  ##############################################################################
+  gdrive-mcp:
+    image: registry.access.redhat.com/ubi9/nodejs-22:latest
+    networks: [ai-stack]
+    ports:
+      - "17100:3100"
+    command: ["npx", "-y", "@piotr-agier/google-drive-mcp", "start"]
+    volumes:
+      - /Users/kpiwko/.config/google-drive-mcp/credentials.json:/config/credentials.json:ro
+      - /Users/kpiwko/.config/google-drive-mcp/tokens.json:/config/tokens.json
+    environment:
+      GOOGLE_DRIVE_OAUTH_CREDENTIALS: /config/credentials.json
+      GOOGLE_DRIVE_MCP_TOKEN_PATH: /config/tokens.json
+      MCP_TRANSPORT: http
+      MCP_HTTP_PORT: "3100"
+      MCP_HTTP_HOST: "0.0.0.0"
+    restart: unless-stopped

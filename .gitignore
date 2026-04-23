@@ -1,0 +1,8 @@
+.env
+.env.local
+.webui_secret_key
+**/google-credentials.json
+**/.env
+
+# Sub-repos not yet published
+ai-rules/

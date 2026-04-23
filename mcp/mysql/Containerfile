@@ -1,0 +1,92 @@
+# MCP MySQL Server Container
+# Based on Red Hat UBI9 with Node.js 22
+#
+# Build: docker build -t mcp-mysql -f Containerfile .
+# Run:   docker run --rm --network host --env-file .env mcp-mysql
+
+# =============================================================================
+# Stage 1: Builder
+# =============================================================================
+FROM registry.access.redhat.com/ubi9/nodejs-22:latest AS builder
+
+# Switch to root for package installation
+USER root
+
+# Install pnpm globally
+RUN npm install -g pnpm@9
+
+# Clone the MCP MySQL server repository
+WORKDIR /build
+RUN dnf install -y git && \
+    git clone --depth 1 https://github.com/benborla/mcp-server-mysql.git app && \
+    dnf clean all
+
+# Install dependencies and build
+WORKDIR /build/app
+# Note: upstream lockfile is sometimes out of sync, so we don't use --frozen-lockfile
+RUN pnpm install && \
+    pnpm run build
+
+# =============================================================================
+# Stage 2: Runtime
+# =============================================================================
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:latest AS runtime
+
+# Labels for container metadata
+LABEL name="mcp-mysql" \
+      summary="MCP Server for MySQL" \
+      description="Model Context Protocol server providing MySQL database access" \
+      maintainer="dprod team"
+
+# Switch to root for setup
+USER root
+
+WORKDIR /opt/app-root/src
+
+# Copy built application from builder stage
+COPY --from=builder /build/app/dist ./dist
+COPY --from=builder /build/app/package.json ./
+COPY --from=builder /build/app/pnpm-lock.yaml ./
+
+# Install pnpm and production dependencies only
+# --ignore-scripts prevents the prepare hook from trying to rebuild
+RUN npm install -g pnpm@9 && \
+    pnpm install --prod --ignore-scripts && \
+    npm cache clean --force && \
+    chown -R 1001:0 /opt/app-root && \
+    chmod -R g=u /opt/app-root
+
+# Switch to non-root user (default for UBI Node.js images)
+USER 1001
+
+# =============================================================================
+# Environment Variables
+# =============================================================================
+# MySQL Connection (required - pass via --env-file or -e flags)
+ENV MYSQL_HOST="" \
+    MYSQL_PORT="3306" \
+    MYSQL_USER="" \
+    MYSQL_PASS="" \
+    MYSQL_DB=""
+
+# Performance tuning
+ENV MYSQL_POOL_SIZE="10" \
+    MYSQL_QUERY_TIMEOUT="30000" \
+    MYSQL_CACHE_TTL="60000"
+
+# Security - default to read-only
+ENV ALLOW_INSERT_OPERATION="false" \
+    ALLOW_UPDATE_OPERATION="false" \
+    ALLOW_DELETE_OPERATION="false"
+
+# Remote MCP mode (HTTP transport)
+ENV IS_REMOTE_MCP="true" \
+    PORT="3000"
+
+# =============================================================================
+# Entrypoint
+# =============================================================================
+EXPOSE 3000
+
+# Run the MCP server
+CMD ["node", "dist/index.js"]
