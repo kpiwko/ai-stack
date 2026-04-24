@@ -1,73 +1,78 @@
-# local-ai
+# ai-stack
 
-Podman Compose stack for local AI tooling and MCP servers.
+Personal AI tooling stack: Podman Compose services for MCP servers, plus Claude Code plugins for productivity workflows.
 
 ## Services
 
-| Profile | Service | Port | Description |
-|---|---|---|---|
-| `ai-beacon` | ai-beacon | 17090 | Knowledge base / prompt library UI |
-| `devlake-local-mysql-mcp` | devlake-local-mysql-mcp | 17301 | Read-only MCP proxy for local DevLake MySQL |
-| `devlake-prod-mysql-mcp` | devlake-prod-mysql-mcp | 17300 | Read-only MCP proxy for remote Konflux RDS |
-| `gmail-mcp` | gmail-mcp | 17633 | Gmail MCP server (search, draft, attachments) |
-| `mcp-atlassian` | mcp-atlassian | 17000 | Jira MCP server (streamable HTTP transport) |
-| `gdrive-mcp` | gdrive-mcp | 17100 | Google Drive MCP server (streamable HTTP transport) |
+| Service | Port | Description |
+|---|---|---|
+| ai-beacon | 17090 | Knowledge base / prompt library UI |
+| devlake-local-mysql-mcp | 17301 | Read-only MCP proxy for local DevLake MySQL |
+| devlake-prod-mysql-mcp | 17300 | Read-only MCP proxy for remote Konflux RDS |
+| gmail-mcp | 17633 | Gmail MCP server (search, draft, attachments) |
+| mcp-atlassian | 17000 | Jira MCP server (streamable HTTP transport) |
+| gdrive-mcp | 17100 | Google Drive MCP server (streamable HTTP transport) |
 
-## One-time setup
+## Quick start
 
-**1. Environment file**
+**1. Copy and fill in secrets**
 
 ```bash
 cp env.example .env
-# Edit .env and fill in secrets
+# Edit .env
 ```
 
-**2. Build the Gmail MCP image**
+**2. Start services**
 
 ```bash
-podman build -t localhost/gmail-mcp-server gmail-mcp-server/
+just up
+# or selectively:
+podman compose up -d gmail-mcp mcp-atlassian
 ```
 
-**3. Build the MySQL MCP image** (used by both `devlake-local-mysql-mcp` and `devlake-prod-mysql-mcp`)
+Container images are built by CI and published to `ghcr.io/kpiwko/` — no local build needed.
+
+## Plugins
+
+Claude Code plugins live in `plugins/`. Install them once inside Claude Code:
+
+```
+/plugin install dev@kpiwko/ai-stack
+/plugin install track@kpiwko/ai-stack
+/plugin install quarterly@kpiwko/ai-stack
+```
+
+Third-party plugins and bare skills are tracked in `plugins.yaml`. See `just install-plugins` and `just install-skills`.
+
+## Just recipes
 
 ```bash
-podman build -t localhost/mcp-mysql mcp-mysql/
-```
-
-## Usage
-
-```shell
-podman compose up -d            # start everything
-podman compose stop <name>      # stop one service
-podman compose up -d <name>     # start one service
-podman compose down             # stop all (volumes are preserved)
+just install-plugins   # print /plugin install commands for Claude Code
+just install-skills    # fetch and install bare skills from plugins.yaml (requires: yq, git)
+just check-images      # verify compose.yaml uses no localhost/ images
+just up                # podman compose up -d
+just down              # podman compose down
+just status            # podman compose ps
 ```
 
 ## gmail-mcp
 
-The container bind-mounts `~/.config/gmail-mcp-server/` directly, so any
-token cached there from a previous run is picked up automatically on start.
+The container bind-mounts `~/.config/gmail-mcp-server/` so tokens from a previous run are
+reused automatically. On first run, authorize via browser:
 
-If no token exists yet, open the auth page after starting:
-
-```shell
-open http://localhost:17633/auth   # step through Google Device Authorization
+```bash
+open http://localhost:17633/auth   # complete Google Device Authorization
 ```
 
-The `/auth` page shows a Google link and a short code. After you authorize,
-the token is saved to `~/.config/gmail-mcp-server/token.json` and reused on
-every subsequent start — no volume management needed.
+Register with Claude Code once:
 
-Register with Claude Code (once, after authorizing):
-
-```shell
+```bash
 claude mcp add --transport http --scope user gmail http://localhost:17633/mcp
 ```
 
 ## devlake-local-mysql-mcp
 
-This profile connects to a DevLake MySQL instance running on the host at port
-3306. Start DevLake first from its own repo:
+Connects to a DevLake MySQL instance running on the host at port 3306. Start DevLake first:
 
 ```bash
 cd ~/devel/work/devlake
@@ -77,14 +82,13 @@ podman compose -f docker-compose-dev.yml up -d mysql
 Then start the MCP proxy:
 
 ```bash
-podman compose --profile devlake-local-mysql-mcp up -d
+podman compose up -d devlake-local-mysql-mcp
 ```
 
 ## Registering MCP servers with Claude Code
 
-The MySQL MCPs contain secrets and are registered as **project-local** (`--scope local`), which
-writes to `.claude/settings.local.json` (gitignored). Run from within each project directory that
-needs database access:
+MySQL MCPs carry secrets and are registered **project-local** (`--scope local`), which writes
+to `.claude/settings.local.json` (gitignored). Run from the project that needs DB access:
 
 ```bash
 source ~/devel/local-ai/.env
@@ -110,115 +114,74 @@ curl -s -X POST http://localhost:17300/mcp \
 
 ## mcp-atlassian (Jira)
 
-Runs as a persistent HTTP service. Start it with:
-
-```shell
-podman compose --profile mcp-atlassian up -d
-```
-
-Register with Claude Code once (the server must be running):
-
-```shell
+```bash
+podman compose up -d mcp-atlassian
 claude mcp add --transport http --scope user mcp-atlassian http://localhost:17000/mcp
 ```
 
-Credentials are passed to the container via `.env` (`JIRA_URL`, `JIRA_USERNAME`,
-`JIRA_API_TOKEN`). The MCP endpoint is `http://localhost:17000/mcp`.
+Credentials come from `.env`: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`.
 
 ## gdrive-mcp (Google Drive)
 
-Authentication must happen on the host before starting the container — the
-server cannot open a browser inside the container:
+Authenticate on the host before starting the container — the server cannot open a browser
+inside the container:
 
-```shell
+```bash
 npx @piotr-agier/google-drive-mcp auth
 ```
 
-This writes `credentials.json` and `tokens.json` into
-`~/.config/google-drive-mcp/`, which the container bind-mounts read-only
-(credentials) and read-write (tokens, for automatic refresh).
+This writes `credentials.json` and `tokens.json` into `~/.config/google-drive-mcp/`.
 
-Start the service:
-
-```shell
-podman compose --profile gdrive-mcp up -d
-```
-
-Register with Claude Code:
-
-```shell
+```bash
+podman compose up -d gdrive-mcp
 claude mcp add --transport http --scope user gdrive http://localhost:17100/mcp
 ```
 
-## Using with OpenShell sandboxes
+## OpenShell sandboxes
 
-`openshell-policy.yaml` grants sandbox access to all services in this stack.
-All services are reached via `host.openshell.internal`, which OpenShell injects
-as an alias for the gateway host IP. Because that resolves to a private RFC 1918
-address, each endpoint in the policy explicitly allowlists private IP ranges to
-override the built-in SSRF guard.
+`openshell/policy.yaml` grants sandbox access to all services in this stack.
+Services are reached via `host.openshell.internal` (OpenShell injects this as an alias
+for the gateway host IP). Private IP ranges are explicitly allowlisted to override the
+built-in SSRF guard.
 
-### Podman: rootful mode required
+### Rootful Podman required
 
-OpenShell's gateway runs k3s (lightweight Kubernetes) inside a container.
-k3s's kubelet requires access to kernel interfaces (`/dev/kmsg`, OOM tuning,
-network namespaces) that are not available in rootless Podman. See
-[OpenShell issue #882](https://github.com/NVIDIA/OpenShell/issues/882).
+OpenShell's gateway runs k3s inside a container. k3s requires kernel interfaces
+(`/dev/kmsg`, OOM tuning, network namespaces) unavailable in rootless Podman.
 
-Switch the Podman machine to rootful mode **once**:
+Switch once:
 
-```shell
+```bash
 podman machine stop
 podman machine set --rootful
 podman machine start
-```
-
-After switching, re-pull images for any running services (rootful and rootless
-use separate image stores):
-
-```shell
-podman compose pull
+podman compose pull   # re-pull images (rootful/rootless use separate stores)
 ```
 
 ### Gateway port
 
-OpenShell's gateway defaults to host port 8080, which conflicts with several
-services in this stack. Start it on a free port instead:
+OpenShell's gateway defaults to port 8080, which conflicts with services here.
+Start it on a free port:
 
-```shell
+```bash
 openshell gateway start --port 17711
 ```
 
-Subsequent `openshell sandbox create` calls will reuse the already-running
-gateway, so `--port` only needs to be set when (re)starting the gateway.
-
 ### Launching a sandbox
 
-Start the profiles you need, then launch a sandbox with the policy:
-
-```shell
-podman compose --profile gmail-mcp --profile devlake-local-mysql-mcp up -d
-openshell sandbox create --policy ./openshell-policy.yaml -- claude
+```bash
+podman compose up -d gmail-mcp devlake-local-mysql-mcp
+openshell sandbox create --policy ./openshell/policy.yaml -- claude
 ```
 
-From inside the sandbox, services are reachable at:
-
-| Service | URL |
-|---|---|
-| ai-beacon | `http://host.openshell.internal:17090` |
-| devlake-local-mysql-mcp | `http://host.openshell.internal:17301/mcp` |
-| devlake-prod-mysql-mcp | `http://host.openshell.internal:17300/mcp` |
-| gmail-mcp | `http://host.openshell.internal:17633/mcp` |
-| mcp-atlassian | `http://host.openshell.internal:17000/mcp` |
-| gdrive-mcp | `http://host.openshell.internal:17100/mcp` |
-
-The policy uses `enforcement: audit` on all endpoints — violations are logged but
-not blocked. Switch to `enforce` once you have confirmed traffic patterns are as
-expected.
+From inside the sandbox, services are reachable at `host.openshell.internal:<port>`.
 
 ## macOS notes
 
-- Named volumes are managed inside the podman VM — data persists across restarts.
-- `host.containers.internal` resolves to the macOS host from inside containers
-  (used by `devlake-mcp` to reach the host-published MySQL port).
+- Named volumes are managed inside the Podman VM — data persists across restarts.
+- `host.containers.internal` resolves to the macOS host from inside containers.
 - `network_mode: host` is not supported; all services use bridge networking.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
