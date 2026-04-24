@@ -1,6 +1,12 @@
 {
   "plugins": [
     {
+      "name": "ai-stack",
+      "path": "plugins/ai-stack",
+      "description": "Maintenance commands for ai-stack repos: scaffold services, install plugins/skills/MCPs.",
+      "version": "0.1.0"
+    },
+    {
       "name": "dev",
       "path": "plugins/dev",
       "description": "Developer workflow tools: code review via CodeRabbit CLI, language coding agents (Go, Python, TypeScript).",

@@ -1,0 +1,83 @@
+# ai-stack configuration
+#
+# plugins  — Claude Code plugins with slash commands and agents
+#            installed via /ai-stack:install-plugins
+#
+# skills   — bare skills installed directly to .claude/skills/
+#            installed via /ai-stack:install-skills
+#
+# mcps     — MCP servers registered with Claude Code
+#            installed via /ai-stack:install-mcps
+
+plugins: []
+
+# Example plugin entry:
+# - name: jira
+#   source: openshift-eng/ai-helpers   # GitHub owner/repo
+#   version: "v1.2.0"                  # pin to a release tag
+
+skills:
+  - name: template-slide-deck
+    source: toddward/claude-skills-playground
+    path: template-slide-deck
+    version: main
+
+  - name: n8n-skills
+    source: czlonkowski/n8n-skills
+    version: main
+
+# Example skill entry:
+# - name: suggest-reviewers
+#   source: openshift-eng/ai-helpers   # GitHub owner/repo
+#   path: plugins/git/skills/suggest-reviewers  # path inside repo (omit for repo root)
+#   version: "v1.2.0"                  # tag, branch, or commit
+# Scope (user/project/local) is chosen interactively via /ai-stack:install-skills
+
+mcps:
+  - name: gmail
+    transport: http
+    url: http://localhost:17633/mcp
+    scope: user                       # default scope, overridable at install time
+
+  - name: mcp-atlassian
+    transport: http
+    url: http://localhost:17000/mcp
+    scope: user
+
+  - name: gdrive
+    transport: http
+    url: http://localhost:17100/mcp
+    scope: user
+
+  - name: devlake-prod-mysql-mcp
+    transport: http
+    url: http://localhost:17300/mcp
+    headers:
+      Authorization: "Bearer $KONFLUX_MCP_SECRET_KEY"
+    scope: local                      # carries secrets — default to local (not committed)
+
+  - name: devlake-local-mysql-mcp
+    transport: http
+    url: http://localhost:17301/mcp
+    headers:
+      Authorization: "Bearer $DEVLAKE_MCP_SECRET_KEY"
+    scope: local
+
+# Example MCP entries:
+#
+# stdio transport (local process):
+# - name: my-mcp
+#   transport: stdio
+#   command: npx
+#   args: ["-y", "@modelcontextprotocol/server-my-mcp"]
+#   env:
+#     API_KEY: $MY_API_KEY          # references shell env var
+#
+# HTTP/SSE transport with auth header:
+# - name: my-mcp
+#   transport: http                 # http | sse
+#   url: http://localhost:8080/mcp
+#   headers:
+#     Authorization: "Bearer $MY_SECRET"   # $VAR expanded from shell env
+#   scope: local                    # user | project | local
+#                                   # scope is a default — overridable at install time

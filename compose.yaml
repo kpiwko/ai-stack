@@ -12,10 +12,9 @@
 #   podman compose up -d <name>    # start one service
 #
 # Services:
-#   ai-beacon            — AI Beacon knowledge base UI (port 17090)
+#   ai-beacon            — AI Beacon session manager for multiple Claude sessions (port 17090)
 #   devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (port 17301)
-#                             Requires devlake MySQL running separately via
-#                             ~/devel/work/devlake docker-compose-dev.yml (port 3306).
+#                             Requires DevLake MySQL running on host port 3306.
 #   devlake-prod-mysql-mcp  — MySQL MCP proxy for remote Konflux RDS (port 17300)
 #   gmail-mcp            — Gmail MCP server, streamable HTTP transport (port 17633)
 #   mcp-atlassian        — Jira MCP server, streamable HTTP transport (port 17000)
@@ -33,7 +32,7 @@ volumes:
 services:
 
   ##############################################################################
-  # AI Beacon — knowledge base / prompt library UI
+  # AI Beacon — session manager for multiple Claude sessions
   # URL: http://localhost:17090
   ##############################################################################
   ai-beacon:
@@ -54,7 +53,6 @@ services:
   # MCP endpoint: http://localhost:17301/mcp  (streamable HTTP transport)
   #
   # Connects to DevLake MySQL via host.containers.internal:3306.
-  # Start DevLake first: cd ~/devel/work/devlake && podman compose -f docker-compose-dev.yml up -d
   ##############################################################################
   devlake-local-mysql-mcp:
     image: ghcr.io/kpiwko/mcp-mysql:latest

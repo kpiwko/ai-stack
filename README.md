@@ -6,7 +6,7 @@ Personal AI tooling stack: Podman Compose services for MCP servers, plus Claude 
 
 | Service | Port | Description |
 |---|---|---|
-| ai-beacon | 17090 | Knowledge base / prompt library UI |
+| ai-beacon | 17090 | Session manager for multiple Claude sessions |
 | devlake-local-mysql-mcp | 17301 | Read-only MCP proxy for local DevLake MySQL |
 | devlake-prod-mysql-mcp | 17300 | Read-only MCP proxy for remote Konflux RDS |
 | gmail-mcp | 17633 | Gmail MCP server (search, draft, attachments) |
@@ -32,27 +32,31 @@ podman compose up -d gmail-mcp mcp-atlassian
 
 Container images are built by CI and published to `ghcr.io/kpiwko/` — no local build needed.
 
-## Plugins
+## Getting started with Claude Code
 
-Claude Code plugins live in `plugins/`. Install them once inside Claude Code:
+Install the ai-stack plugin once:
 
 ```
-/plugin install dev@kpiwko/ai-stack
-/plugin install track@kpiwko/ai-stack
-/plugin install quarterly@kpiwko/ai-stack
+claude plugin install ai-stack@kpiwko/ai-stack
 ```
 
-Third-party plugins and bare skills are tracked in `plugins.yaml`. See `just install-plugins` and `just install-skills`.
+Then use it inside a Claude session to set up everything else:
+
+```
+/ai-stack:install-plugins   ← install dev, track, quarterly plugins
+/ai-stack:install-skills    ← install bare skills (template-slide-deck, n8n-skills)
+/ai-stack:install-mcps      ← register MCP servers with Claude Code
+```
+
+All three commands are interactive: they show what's available, what's already installed,
+and let you pick scope (user / project / local) before making any changes.
 
 ## Just recipes
 
 ```bash
-just install-plugins   # print /plugin install commands for Claude Code
-just install-skills    # fetch and install bare skills from plugins.yaml (requires: yq, git)
-just check-images      # verify compose.yaml uses no localhost/ images
-just up                # podman compose up -d
-just down              # podman compose down
-just status            # podman compose ps
+just up       # podman compose up -d
+just down     # podman compose down
+just status   # podman compose ps
 ```
 
 ## gmail-mcp
@@ -64,62 +68,42 @@ reused automatically. On first run, authorize via browser:
 open http://localhost:17633/auth   # complete Google Device Authorization
 ```
 
-Register with Claude Code once:
-
-```bash
-claude mcp add --transport http --scope user gmail http://localhost:17633/mcp
-```
+Then register with Claude Code via `/ai-stack:install-mcps`.
 
 ## devlake-local-mysql-mcp
 
-Connects to a DevLake MySQL instance running on the host at port 3306. Start DevLake first:
+Connects to a DevLake MySQL instance running on the host at port 3306. Start DevLake's
+MySQL service first, then register this MCP via `/ai-stack:install-mcps`. The command
+reads `$DEVLAKE_MCP_SECRET_KEY` from the environment — make sure `.env` is sourced first.
 
-```bash
-cd ~/devel/work/devlake
-podman compose -f docker-compose-dev.yml up -d mysql
-```
+**Optional: connect via shared Podman network instead of host port**
 
-Then start the MCP proxy:
+If DevLake runs in Podman Compose with a named network, you can attach this service to
+that network and reach MySQL by container name — no host port exposure needed.
 
-```bash
-podman compose up -d devlake-local-mysql-mcp
-```
+1. Find DevLake's network name: `podman network ls`
 
-## Registering MCP servers with Claude Code
+2. Declare it as external in `compose.yaml`:
+   ```yaml
+   networks:
+     ai-stack:
+       driver: bridge
+     devprod:        # replace with DevLake's actual network name
+       external: true
+   ```
 
-MySQL MCPs carry secrets and are registered **project-local** (`--scope local`), which writes
-to `.claude/settings.local.json` (gitignored). Run from the project that needs DB access:
-
-```bash
-source ~/devel/local-ai/.env
-
-claude mcp add --transport http --scope local devlake-prod-mysql-mcp \
-  http://localhost:17300/mcp \
-  --header "Authorization: Bearer ${KONFLUX_MCP_SECRET_KEY}"
-
-claude mcp add --transport http --scope local devlake-local-mysql-mcp \
-  http://localhost:17301/mcp \
-  --header "Authorization: Bearer ${DEVLAKE_MCP_SECRET_KEY}"
-```
-
-Verify a server is responding before registering:
-
-```bash
-curl -s -X POST http://localhost:17300/mcp \
-  -H "Authorization: Bearer ${KONFLUX_MCP_SECRET_KEY}" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
-```
+3. Add the network to the service and update `MYSQL_HOST` to the MySQL container name:
+   ```yaml
+   devlake-local-mysql-mcp:
+     networks: [ai-stack, devprod]
+     environment:
+       MYSQL_HOST: mysql   # replace with DevLake's MySQL container name
+   ```
 
 ## mcp-atlassian (Jira)
 
-```bash
-podman compose up -d mcp-atlassian
-claude mcp add --transport http --scope user mcp-atlassian http://localhost:17000/mcp
-```
-
-Credentials come from `.env`: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`.
+Credentials come from `.env`: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`. Start the
+service then register via `/ai-stack:install-mcps`.
 
 ## gdrive-mcp (Google Drive)
 
@@ -131,11 +115,7 @@ npx @piotr-agier/google-drive-mcp auth
 ```
 
 This writes `credentials.json` and `tokens.json` into `~/.config/google-drive-mcp/`.
-
-```bash
-podman compose up -d gdrive-mcp
-claude mcp add --transport http --scope user gdrive http://localhost:17100/mcp
-```
+Then start the service and register via `/ai-stack:install-mcps`.
 
 ## OpenShell sandboxes
 
