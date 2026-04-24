@@ -44,9 +44,9 @@ Add entries to `plugins/ai-stack/reference/skills.yaml` to extend this list.
    which to install (numbers comma-separated, or `all`).
 
 4. Ask for scope:
-   - **user** — `~/.claude/skills/<name>` (available in all sessions)
-   - **project** — `.claude/skills/<name>` in current directory (shared via git)
-   - **local** — `.claude/skills/<name>` in current directory (personal, not committed)
+   - **user** — `~/.claude/skills/<name>` — available in all projects
+   - **project** — `.claude/skills/<name>` — same path as local, but committed to git and shared with the team
+   - **local** — `.claude/skills/<name>` — same path as project, but gitignored and personal to you
 
 5. For each selected skill, install via sparse git checkout:
 
