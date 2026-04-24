@@ -56,7 +56,7 @@ argument-hint: "[plugin-name|all]"
 7. For each selected plugin, run:
 
    ```bash
-   claude plugin install <plugin>@kpiwko/ai-stack --scope <scope>
+   claude plugin install <plugin>@ai-stack --scope <scope>
    ```
 
    For 3rd party plugins from `ai-stack.yaml`, use their `source` field:
