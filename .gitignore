@@ -4,5 +4,5 @@
 **/google-credentials.json
 **/.env
 
-# Sub-repos not yet published
+# ai-rules repo — replaced by plugins/ in this repo
 ai-rules/

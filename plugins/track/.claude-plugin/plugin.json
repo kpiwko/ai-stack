@@ -1,0 +1,8 @@
+{
+  "name": "track",
+  "description": "Track decisions and work in external systems: Jira, Google Docs, Google Drive.",
+  "version": "0.1.0",
+  "author": {
+    "name": "github.com/kpiwko/ai-stack"
+  }
+}
