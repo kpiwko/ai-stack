@@ -56,12 +56,22 @@ directories above the skill base directory shown at invocation time.
    ```
 
 4. If an argument was provided, use it to select plugins; otherwise ask the user
-   which to install (numbers comma-separated, or `all`).
+   which to install (numbers comma-separated, `all`, or `none` to exit).
 
-5. Ask for scope:
-   - **user** — available in all sessions (default)
-   - **project** — available only in the current project
-   - **local** — available only in the current directory (personal, not committed)
+5. **Always ask for scope before installing** — even if only one plugin is selected.
+   Present this exact prompt to the user:
+
+   ```
+   Install scope:
+     u) user    — available in all sessions (default)
+     p) project — available only in the current project
+     l) local   — available only in the current directory (personal, not committed)
+
+   Scope [u/p/l, default: u]:
+   ```
+
+   Map input: `u`/`user` → `user`, `p`/`project` → `project`, `l`/`local` → `local`.
+   Empty input defaults to `user`.
 
 6. For each selected ai-stack plugin, run:
 
