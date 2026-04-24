@@ -122,6 +122,10 @@ Weight **external** factors more heavily than internal ones:
 - Focus on outcomes; ask deeper questions if outcomes cannot be inferred.
 - Track data with current date if not provided.
 - Tone: analytical yet positive, strategic, clear, culturally aware.
+- **Every Jira issue and document referenced in the output must include a hyperlink.**
+  Use `[PROJ-123](url)` for issues and `[Doc Title](url)` for Drive documents.
+  Pull URLs from the data file if `/quarterly:prep` was run; ask the user otherwise.
+  Never reference an issue or document by name or key alone without a link.
 
 ---
 
