@@ -51,31 +51,33 @@ Add entries to `plugins/ai-stack/reference/mcps.yaml` to extend this list.
    ```
 
 3. If an argument was provided, use it to select MCPs; otherwise ask the user
-   which to register (numbers comma-separated, or `all`).
+   which to register (numbers comma-separated, `all`, or `none` to exit).
 
-4. Ask for scope:
-   - **user** — available in all sessions (default)
-   - **project** — available only in the current project
-   - **local** — available only in the current directory (personal, not committed)
+4. **Always ask for scope before registering** — even if only one MCP is selected.
+   If the entry has a `scope` field, use it as the pre-selected default.
+   Present this exact prompt to the user:
 
-   If the entry has a `scope` field, pre-select it but confirm with the user
-   before proceeding (scope is always overridable at install time).
+   ```
+   Install scope:
+     u) user    — available in all sessions (default)
+     p) project — available only in the current project
+     l) local   — available only in the current directory (personal, not committed)
+
+   Scope [u/p/l, default: <scope-from-yaml-or-u>]:
+   ```
+
+   Map input: `u`/`user` → `user`, `p`/`project` → `project`, `l`/`local` → `local`.
+   Empty input defaults to the pre-selected value.
 
 5. For each selected MCP, run:
 
-   **http/sse** transport:
    ```bash
    claude mcp add --transport <transport> --scope <scope> \
      [--header "KEY: VALUE" ...] <name> <url>
    ```
 
-   **stdio** transport:
-   ```bash
-   claude mcp add --scope <scope> [-e KEY=VALUE ...] <name> <command> [args...]
-   ```
-
-   Expand `$VAR` references in `headers` and `env` values from the current shell
-   environment before passing them to the CLI. If a required env var is unset,
-   warn and skip that MCP rather than registering it with an empty value.
+   Expand `$VAR` references in header values from the current shell environment
+   before passing them to the CLI. If a required env var is unset, warn and skip
+   that MCP rather than registering it with an empty value.
 
 6. Confirm each MCP registered successfully.

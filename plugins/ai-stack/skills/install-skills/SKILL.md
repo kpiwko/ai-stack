@@ -41,11 +41,21 @@ Add entries to `plugins/ai-stack/reference/skills.yaml` to extend this list.
    ```
 
 3. If an argument was provided, use it to select skills; otherwise present the
-   numbered menu and ask the user to pick by number (comma-separated, or `all`).
+   numbered menu and ask the user to pick by number (comma-separated, `all`, or `none` to exit).
 
-4. Ask for scope:
-   - **user** — `~/.claude/skills/<name>` — available in all projects (default)
-   - **project** — `.claude/skills/<name>` — committed to git and shared with the team
+4. **Always ask for scope before installing** — even if only one skill is selected.
+   Present this exact prompt to the user:
+
+   ```
+   Install scope:
+     u) user    — available in all projects (default)
+     p) project — committed to git and shared with the team
+
+   Scope [u/p, default: u]:
+   ```
+
+   Map input: `u`/`user` → `user`, `p`/`project` → `project`.
+   Empty input defaults to `user`.
 
 5. For each selected skill, install via sparse git checkout:
 
