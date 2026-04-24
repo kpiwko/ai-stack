@@ -34,14 +34,14 @@ Container images are built by CI and published to `ghcr.io/kpiwko/` — no local
 
 ## Getting started with Claude Code
 
-Register the marketplace and install the ai-stack plugin once:
+**1. Register the marketplace and install the ai-stack plugin:**
 
 ```
 claude plugin marketplace add kpiwko/ai-stack --scope user
 claude plugin install ai-stack@ai-stack
 ```
 
-Then use it inside a Claude session to set up everything else:
+**2. Use it inside a Claude session to set up everything else:**
 
 ```
 /ai-stack:install-plugins   ← install dev, track, quarterly plugins
@@ -51,6 +51,15 @@ Then use it inside a Claude session to set up everything else:
 
 All three commands are interactive: they show what's available, what's already installed,
 and let you pick scope (user / project / local) before making any changes.
+
+**Updating plugins:**
+
+```
+claude plugin marketplace update ai-stack
+claude plugin update ai-stack@ai-stack
+```
+
+Restart Claude Code after updating for changes to take effect.
 
 ## Just recipes
 
