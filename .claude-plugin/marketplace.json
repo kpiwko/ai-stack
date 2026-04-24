@@ -1,26 +1,34 @@
 {
+  "name": "ai-stack",
+  "metadata": {
+    "description": "Personal AI tooling stack: Claude Code plugins for developer workflows, quarterly reviews, and decision tracking."
+  },
+  "owner": {
+    "name": "Karel Piwko",
+    "url": "https://github.com/kpiwko"
+  },
   "plugins": [
     {
       "name": "ai-stack",
-      "path": "plugins/ai-stack",
+      "source": "./plugins/ai-stack",
       "description": "Maintenance commands for ai-stack repos: scaffold services, install plugins/skills/MCPs.",
       "version": "0.1.0"
     },
     {
       "name": "dev",
-      "path": "plugins/dev",
+      "source": "./plugins/dev",
       "description": "Developer workflow tools: code review via CodeRabbit CLI, language coding agents (Go, Python, TypeScript).",
       "version": "0.1.0"
     },
     {
       "name": "track",
-      "path": "plugins/track",
+      "source": "./plugins/track",
       "description": "Track decisions and work in external systems: Jira issues, Google Docs, Google Drive organization.",
       "version": "0.1.0"
     },
     {
       "name": "quarterly",
-      "path": "plugins/quarterly",
+      "source": "./plugins/quarterly",
       "description": "Quarterly review workflow: gather activity data from Gmail, Jira, and Drive; generate a structured quarterly reflection.",
       "version": "0.1.0"
     }
