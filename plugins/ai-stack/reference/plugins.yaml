@@ -1,0 +1,9 @@
+# 3rd party plugins installed via /ai-stack:install-plugins
+# Built-in ai-stack marketplace plugins (ai-stack, dev, track, quarterly) need no entry here.
+#
+# Format:
+# - name: plugin-name
+#   source: owner/repo   # GitHub marketplace identifier
+#   version: "v1.2.0"   # tag, branch, or commit
+
+plugins: []

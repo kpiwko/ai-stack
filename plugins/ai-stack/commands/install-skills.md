@@ -1,5 +1,5 @@
 ---
-description: Install bare skills from ai-stack.yaml into user, project, or local scope.
+description: Install bare skills into user, project, or local scope.
 argument-hint: "[skill-name|all]"
 ---
 
@@ -15,16 +15,24 @@ argument-hint: "[skill-name|all]"
 
 ---
 
+## Available skills
+
+Add entries to `plugins/ai-stack/reference/skills.yaml` to extend this list.
+
+| Skill | Source | Version |
+|---|---|---|
+| `template-slide-deck` | `toddward/claude-skills-playground` @ `template-slide-deck` | `main` |
+| `n8n-skills` | `czlonkowski/n8n-skills` | `main` |
+
+---
+
 ## Process
 
-1. Fetch `ai-stack.yaml` from
-   `https://raw.githubusercontent.com/kpiwko/ai-stack/main/ai-stack.yaml`
-
-2. Check installation status for each skill:
+1. Check installation status for each skill:
    - **user**: `~/.claude/skills/<name>` exists
    - **project/local**: `.claude/skills/<name>` exists in the current directory
 
-3. Present skills with status:
+2. Present skills with status:
 
    ```
    Available skills:
@@ -32,15 +40,15 @@ argument-hint: "[skill-name|all]"
    2. n8n-skills            [installed: user]
    ```
 
-4. If an argument was provided, use it to select skills; otherwise ask the user
+3. If an argument was provided, use it to select skills; otherwise ask the user
    which to install (numbers comma-separated, or `all`).
 
-5. Ask for scope:
+4. Ask for scope:
    - **user** — `~/.claude/skills/<name>` (available in all sessions)
    - **project** — `.claude/skills/<name>` in current directory (shared via git)
    - **local** — `.claude/skills/<name>` in current directory (personal, not committed)
 
-6. For each selected skill, install via sparse git checkout:
+5. For each selected skill, install via sparse git checkout:
 
    ```bash
    tmpdir=$(mktemp -d)
@@ -56,5 +64,5 @@ argument-hint: "[skill-name|all]"
    Where `<target>` is `~/.claude/skills/<name>` for user scope, or
    `.claude/skills/<name>` for project/local scope.
 
-7. Confirm each skill installed, then remind the user that **local** scope
+6. Confirm each skill installed, then remind the user that **local** scope
    skills should be added to `.gitignore` if they should not be committed.

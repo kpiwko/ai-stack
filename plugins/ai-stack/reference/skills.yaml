@@ -1,0 +1,17 @@
+# Skills installed via /ai-stack:install-skills
+#
+# Format:
+# - name: skill-name
+#   source: owner/repo           # GitHub owner/repo
+#   path: path/in/repo           # path inside repo (omit for repo root)
+#   version: main                # tag, branch, or commit
+
+skills:
+  - name: template-slide-deck
+    source: toddward/claude-skills-playground
+    path: template-slide-deck
+    version: main
+
+  - name: n8n-skills
+    source: czlonkowski/n8n-skills
+    version: main
