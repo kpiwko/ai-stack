@@ -15,7 +15,23 @@ plugins: []
 #   source: openshift-eng/ai-helpers   # GitHub owner/repo
 #   version: "v1.2.0"                  # pin to a release tag
 
-skills: []
+skills:
+  - name: red-hat-quick-deck
+    source: toddward/red-hat-quick-deck
+    version: main
+    scope: global
+
+  - name: template-slide-deck
+    source: toddward/claude-skills-playground
+    path: template-slide-deck
+    version: main
+    scope: global
+
+  - name: n8n-skills
+    source: czlonkowski/n8n-skills
+    version: main
+    scope: global
+    optional: true
 
 # Example skill entry:
 # - name: suggest-reviewers
