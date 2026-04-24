@@ -1,5 +1,5 @@
 ---
-description: Install bare skills into user, project, or local scope.
+description: Install bare skills into user or project scope.
 argument-hint: "[skill-name|all]"
 ---
 
@@ -30,7 +30,7 @@ Add entries to `plugins/ai-stack/reference/skills.yaml` to extend this list.
 
 1. Check installation status for each skill:
    - **user**: `~/.claude/skills/<name>` exists
-   - **project/local**: `.claude/skills/<name>` exists in the current directory
+   - **project**: `.claude/skills/<name>` exists in the current directory
 
 2. Present skills with status:
 
@@ -40,13 +40,12 @@ Add entries to `plugins/ai-stack/reference/skills.yaml` to extend this list.
    2. n8n-skills            [installed: user]
    ```
 
-3. If an argument was provided, use it to select skills; otherwise ask the user
-   which to install (numbers comma-separated, or `all`).
+3. If an argument was provided, use it to select skills; otherwise present the
+   numbered menu and ask the user to pick by number (comma-separated, or `all`).
 
 4. Ask for scope:
-   - **user** — `~/.claude/skills/<name>` — available in all projects
-   - **project** — `.claude/skills/<name>` — same path as local, but committed to git and shared with the team
-   - **local** — `.claude/skills/<name>` — same path as project, but gitignored and personal to you
+   - **user** — `~/.claude/skills/<name>` — available in all projects (default)
+   - **project** — `.claude/skills/<name>` — committed to git and shared with the team
 
 5. For each selected skill, install via sparse git checkout:
 
@@ -62,7 +61,6 @@ Add entries to `plugins/ai-stack/reference/skills.yaml` to extend this list.
    ```
 
    Where `<target>` is `~/.claude/skills/<name>` for user scope, or
-   `.claude/skills/<name>` for project/local scope.
+   `.claude/skills/<name>` for project scope.
 
-6. Confirm each skill installed, then remind the user that **local** scope
-   skills should be added to `.gitignore` if they should not be committed.
+6. Confirm each skill installed successfully.

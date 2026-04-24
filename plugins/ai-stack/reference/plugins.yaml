@@ -3,7 +3,13 @@
 #
 # Format:
 # - name: plugin-name
-#   source: owner/repo   # GitHub marketplace identifier
-#   version: "v1.2.0"   # tag, branch, or commit
+#   source: marketplace-id   # marketplace identifier used in: claude plugin install <name>@<source>
+#                            # for GitHub-hosted marketplaces this is owner/repo
+#   version: "v1.2.0"        # tag, branch, or commit (optional)
 
-plugins: []
+plugins:
+  - name: context7
+    source: claude-plugins-official
+
+  - name: superpowers
+    source: claude-plugins-official

@@ -1,8 +1,9 @@
 {
   "name": "ai-stack",
   "description": "Maintenance commands for the ai-stack repo: scaffold services, workflows, and verify image references.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
-    "name": "github.com/kpiwko/ai-stack"
-  }
+    "name": "Karel Piwko"
+  },
+  "repository": "https://github.com/kpiwko/ai-stack"
 }

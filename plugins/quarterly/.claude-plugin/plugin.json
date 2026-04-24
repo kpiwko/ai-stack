@@ -3,6 +3,7 @@
   "description": "Quarterly review: gather activity data from Gmail, Jira, and Drive; generate structured reflection.",
   "version": "0.1.0",
   "author": {
-    "name": "github.com/kpiwko/ai-stack"
-  }
+    "name": "Karel Piwko"
+  },
+  "repository": "https://github.com/kpiwko/ai-stack"
 }

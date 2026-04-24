@@ -26,9 +26,9 @@ argument-hint: "[plugin-name|all]"
 | `track` | Jira and Google Drive commands |
 | `quarterly` | Quarterly reflection and connection commands |
 
-**3rd party** (none currently — add entries to `plugins/ai-stack/reference/plugins.yaml`):
+**3rd party** (source: `plugins/ai-stack/reference/plugins.yaml`):
 
-*(none)*
+Read `plugins/ai-stack/reference/plugins.yaml` to get the current list.
 
 ---
 
@@ -39,17 +39,21 @@ argument-hint: "[plugin-name|all]"
    claude plugin list
    ```
 
-2. Present plugins with status:
+2. Read `plugins/ai-stack/reference/plugins.yaml` to get the 3rd party plugin list.
+
+3. Present all plugins with status (built-in first, then 3rd party):
 
    ```
    Available plugins:
-   1. ai-stack  [installed: user]
-   2. dev        [not installed]
-   3. track      [not installed]
-   4. quarterly  [not installed]
+   1. ai-stack   [installed: user]    (@ai-stack)
+   2. dev         [not installed]     (@ai-stack)
+   3. track       [not installed]     (@ai-stack)
+   4. quarterly   [not installed]     (@ai-stack)
+   5. context7    [not installed]     (@claude-plugins-official)
+   6. superpowers [not installed]     (@claude-plugins-official)
    ```
 
-3. If an argument was provided, use it to select plugins; otherwise ask the user
+4. If an argument was provided, use it to select plugins; otherwise ask the user
    which to install (numbers comma-separated, or `all`).
 
 4. Ask for scope:
