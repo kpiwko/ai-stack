@@ -26,9 +26,10 @@ argument-hint: "[plugin-name|all]"
 | `track` | Jira and Google Drive commands |
 | `quarterly` | Quarterly reflection and connection commands |
 
-**3rd party** (source: `plugins/ai-stack/reference/plugins.yaml`):
+**3rd party** (source: `reference/plugins.yaml` in the plugin root):
 
-Read `plugins/ai-stack/reference/plugins.yaml` to get the current list.
+The 3rd party list is read at runtime from `reference/plugins.yaml`, located two
+directories above the skill base directory shown at invocation time.
 
 ---
 
@@ -39,7 +40,8 @@ Read `plugins/ai-stack/reference/plugins.yaml` to get the current list.
    claude plugin list
    ```
 
-2. Read `plugins/ai-stack/reference/plugins.yaml` to get the 3rd party plugin list.
+2. Read `reference/plugins.yaml` from the plugin root (two levels above the skill
+   base directory) to get the 3rd party plugin list.
 
 3. Present all plugins with status (built-in first, then 3rd party):
 
@@ -56,12 +58,12 @@ Read `plugins/ai-stack/reference/plugins.yaml` to get the current list.
 4. If an argument was provided, use it to select plugins; otherwise ask the user
    which to install (numbers comma-separated, or `all`).
 
-4. Ask for scope:
+5. Ask for scope:
    - **user** — available in all sessions (default)
    - **project** — available only in the current project
    - **local** — available only in the current directory (personal, not committed)
 
-5. For each selected ai-stack plugin, run:
+6. For each selected ai-stack plugin, run:
 
    ```bash
    claude plugin install <plugin>@ai-stack --scope <scope>
@@ -73,4 +75,4 @@ Read `plugins/ai-stack/reference/plugins.yaml` to get the current list.
    claude plugin install <plugin>@<source> --scope <scope>
    ```
 
-6. Confirm each plugin installed successfully.
+7. Confirm each plugin installed successfully.
