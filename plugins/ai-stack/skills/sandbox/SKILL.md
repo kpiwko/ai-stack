@@ -63,10 +63,11 @@ If an argument was given: `install` → install mode, `update` → update mode.
 The skill base directory is shown at invocation time in the header line:
 `Base directory for this skill: /path/to/plugins/ai-stack/skills/sandbox`
 
-Use that path to compute the repo root (4 levels up) and check candidates:
+Use that path to compute the repo root (4 levels up) and check candidates.
+
+Set `SKILL_BASE` to the base directory path from the invocation header before running:
 
 ```bash
-SKILL_BASE="<skill-base-dir from invocation header>"
 for candidate in \
     "$(cd "$SKILL_BASE/../../../../lince" 2>/dev/null && pwd)" \
     "$(pwd)/lince" \
@@ -118,7 +119,20 @@ rustup target list --installed 2>/dev/null | grep -q wasm32-wasip1 && echo "wasm
 [ "$(uname -s)" = "Linux" ] && { command -v bwrap >/dev/null 2>&1 && bwrap --version || echo "bubblewrap: MISSING"; }
 
 # nono
-command -v nono >/dev/null 2>&1 && echo "nono: $(nono --version 2>/dev/null | head -1)" || echo "nono: not installed"
+command -v nono >/dev/null 2>&1 && echo "nono: $(nono --version 2>/dev/null | head -1)" || echo "nono: MISSING"
+```
+
+Display results clearly, for example:
+
+```
+Prerequisites:
+  ✓ python3 3.12
+  ✓ git
+  ✓ zellij 0.43.0
+  ✓ rustup + wasm32-wasip1
+  ✗ bubblewrap — not found
+    Fedora/RHEL: sudo dnf install bubblewrap
+    Ubuntu/Debian: sudo apt install bubblewrap
 ```
 
 Display results with install hints:
@@ -131,9 +145,9 @@ Display results with install hints:
 | rustup | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | same |
 | wasm32-wasip1 | `rustup target add wasm32-wasip1` | same |
 | bubblewrap | `sudo dnf install bubblewrap` / `sudo apt install bubblewrap` | N/A (Linux only) |
-| nono | `cargo install nono-cli` | `brew install nono` |
+| nono | `cargo install nono-cli` | `cargo install nono-cli` (or `brew install nono`) |
 
-If a blocking prerequisite is missing (no sandbox backend on Linux, no rustup), warn and ask:
+If a blocking prerequisite is missing (no sandbox backend: `bubblewrap` on Linux, `nono` on macOS; or no `rustup`), warn and ask:
 ```
 ⚠ Missing required tools above. Continue anyway? [y/N]:
 ```
