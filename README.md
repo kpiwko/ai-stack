@@ -37,7 +37,7 @@ Container images are built by CI and published to `ghcr.io/kpiwko/` — no local
 **1. Register the marketplace and install the ai-stack plugin:**
 
 ```
-claude plugin marketplace add kpiwko/ai-stack --scope user
+claude plugin marketplace add https://github.com/kpiwko/ai-stack.git --scope user
 claude plugin install ai-stack@ai-stack
 ```
 
