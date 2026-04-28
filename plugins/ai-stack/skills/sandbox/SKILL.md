@@ -24,13 +24,13 @@ Before anything else, run these checks to detect if you are inside an agent-sand
 ```bash
 echo "LINCE_AGENT_ID=${LINCE_AGENT_ID:-}"
 echo "HOME=$HOME"
-findmnt -n -o FSTYPE "$HOME" 2>/dev/null || true
+[ "$(uname -s)" = "Linux" ] && findmnt -n -o FSTYPE "$HOME" 2>/dev/null || true
 ```
 
 If any of the following are true, stop and display the message below — do not proceed:
 - `LINCE_AGENT_ID` is non-empty
 - `$HOME` contains `.agent-sandbox/` (e.g. `~/.agent-sandbox/home`)
-- The FSTYPE of `$HOME` is `tmpfs`
+- The FSTYPE of `$HOME` is `tmpfs` (Linux only — detected via `findmnt`)
 
 ```
 ⚠  This skill cannot run inside agent-sandbox.
@@ -118,8 +118,8 @@ rustup target list --installed 2>/dev/null | grep -q wasm32-wasip1 && echo "wasm
 # bubblewrap (Linux only)
 [ "$(uname -s)" = "Linux" ] && { command -v bwrap >/dev/null 2>&1 && bwrap --version || echo "bubblewrap: MISSING"; }
 
-# nono
-command -v nono >/dev/null 2>&1 && echo "nono: $(nono --version 2>/dev/null | head -1)" || echo "nono: MISSING"
+# nono (macOS only)
+[ "$(uname -s)" = "Darwin" ] && { command -v nono >/dev/null 2>&1 && echo "nono: $(nono --version 2>/dev/null | head -1)" || echo "nono: MISSING"; }
 ```
 
 Display results clearly, for example:
