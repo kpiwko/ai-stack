@@ -23,6 +23,30 @@ A new skill in the `ai-stack` plugin that guides users through installing or upd
 
 ## Workflow
 
+### Step 0 — Detect if running inside agent-sandbox (guard)
+
+Before doing anything else, check whether the skill is being invoked from inside an agent-sandbox environment. If it is, the install/update cannot succeed — the sandbox makes `$HOME` read-only (or a tmpfs), so writes to `~/.local/bin`, `~/.config/zellij/`, etc. will fail silently or with errors.
+
+**Detection signals** (check all three; any one is sufficient):
+
+| Signal | Command | Meaning |
+|---|---|---|
+| `LINCE_AGENT_ID` env var is set | `[ -n "$LINCE_AGENT_ID" ]` | Inside a sandboxed agent (when `--id` was passed) |
+| `$HOME` path is under `.agent-sandbox/` | `[[ "$HOME" == */.agent-sandbox/* ]]` | nono backend sets `HOME=~/.agent-sandbox/home` |
+| `$HOME` is a tmpfs mount | `findmnt -n -o FSTYPE "$HOME" 2>/dev/null \| grep -q tmpfs` | bwrap backend overlays `$HOME` with tmpfs |
+
+If any signal fires, exit immediately with a clear message:
+```
+⚠  This skill cannot run inside agent-sandbox.
+
+The installer writes to ~/.local/bin, ~/.config/zellij/, and ~/.bashrc —
+all of which are read-only or ephemeral inside the sandbox.
+
+Run /ai-stack:sandbox from a regular terminal session (outside the sandbox).
+```
+
+> **Note for lince project**: A dedicated `AGENT_SANDBOX=1` env var set unconditionally by both bwrap and nono backends would make this check simpler and more reliable. Worth filing as a feature request.
+
 ### Step 1 — Detect current state
 
 Check what is already installed:
