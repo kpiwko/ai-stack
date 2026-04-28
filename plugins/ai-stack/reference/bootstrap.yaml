@@ -1,0 +1,50 @@
+# Source of truth for /ai-stack:bootstrap — what gets checked and installed.
+#
+# required: true  → prerequisite; skill fails fast if missing (no install command)
+# required: false → managed tool; skill installs it if absent
+
+languages:
+  go:
+    runtime:
+      name: go
+      check: go version
+      required: true
+      reason: "Install from https://go.dev/dl/"
+    lsp:
+      name: gopls
+      install: "go install golang.org/x/tools/gopls@latest"
+
+  python:
+    runtime:
+      name: uv
+      check: uv --version
+      required: false
+      install: "curl -LsSf https://astral.sh/uv/install.sh | sh"
+    lsp:
+      name: pyright
+      install: "uv tool install pyright"
+
+  typescript:
+    runtime:
+      name: node
+      check: node --version
+      required: true
+      reason: "Install from https://nodejs.org/ or via brew"
+    package_manager:
+      name: pnpm
+      check: pnpm --version
+      required: false
+      install: "npm install -g pnpm"
+    lsp:
+      name: typescript-language-server
+      install: "pnpm add -g typescript typescript-language-server"
+
+  rust:
+    runtime:
+      name: rustup
+      check: rustup --version
+      required: false
+      install: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+    lsp:
+      name: rust-analyzer
+      install: "rustup component add rust-analyzer"

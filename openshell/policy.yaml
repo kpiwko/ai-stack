@@ -1,6 +1,11 @@
 version: 1
 
-# OpenShell sandbox policy for local-ai Podman stack.
+# OpenShell sandbox policy for ai-stack Podman stack.
+#
+# NOTE: This file controls network access for MCP server connections only.
+# It is NOT the agent sandbox policy. Agent sandboxing (filesystem + process
+# isolation for Claude Code instances) is configured via nono profiles in
+# lince/lince-dashboard/nono-profiles/lince-claude.json.
 #
 # All services are reached via host.openshell.internal, which resolves to
 # the gateway host IP. Because that IP is in an RFC 1918 private range,

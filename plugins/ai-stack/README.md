@@ -7,6 +7,7 @@ automatically when working inside the ai-stack repository.
 
 | Command | Description |
 |---|---|
+| `/ai-stack:bootstrap` | Install LSP servers and runtimes for Go, Python, TypeScript, and Rust |
 | `/ai-stack:add-service <name>` | Scaffold Containerfile, multi-arch CI workflow, and compose.yaml entry |
 | `/ai-stack:add-workflow <name>` | Generate multi-arch Buildah workflow for an existing service |
 | `/ai-stack:install-plugins [name\|all]` | Install ai-stack and 3rd party plugins (user/project/local scope) |
