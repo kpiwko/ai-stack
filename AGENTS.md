@@ -20,6 +20,9 @@ and tool workflows live in plugins — see `plugins/` in this repo.
 4. **Prefer editing over creating** — edit existing files rather than creating new ones.
    Only create a new file when a clear responsibility or context is missing.
 
+5. **Prefer search tools over shell** — Use `Grep`/`Glob` for searching rather than
+   `Bash` grep/find when possible.
+
 ---
 
 ## 2. Repository Structure
@@ -36,7 +39,7 @@ and tool workflows live in plugins — see `plugins/` in this repo.
 | `scripts/` or `tools/` | Automation and utility scripts |
 | `examples/` | Example usage or demo projects |
 
-Infrastructure projects may add `pulumi/`, `kubernetes/` etc. as needed.
+Infrastructure projects may add `pulumi/`, `kubernetes/` etc. as needed. Directories are conventional — create them as the project grows.
 
 ---
 
@@ -56,8 +59,8 @@ Why: the reason — a past incident, a cost decision, a technical constraint
 Applies to: what it constrains (all services / all skills / all MCP builds / etc.)
 ```
 
-Everything else — feature design, implementation — flows through the superpowers
-workflow (`docs/superpowers/specs/` + `docs/superpowers/plans/`).
+For feature design and implementation, create a spec under `docs/superpowers/specs/`
+and an implementation plan under `docs/superpowers/plans/` before writing code.
 
 ---
 
@@ -92,8 +95,3 @@ feat: add user authentication
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ```
 
----
-
-## 6. Tool Usage
-
-- Use `Grep`/`Glob` for searching rather than `Bash` grep/find when possible.
