@@ -31,6 +31,8 @@ Invoke the relevant skill before starting a task.
 | `/superpowers:executing-plans` | When running a written plan |
 | `/superpowers:systematic-debugging` | When encountering a bug |
 | `/superpowers:requesting-code-review` | Before merging |
+| `/ai-stack:bootstrap` | Set up LSP servers and runtimes |
+| `/ai-stack:add-entry` | Add plugin, skill, or MCP to the registry |
 | `/ai-stack:add-service` | Scaffold a new MCP service |
 | `/ai-stack:add-workflow` | Add CI workflow to an existing service |
 | `/ai-stack:install-plugins` | Install or update plugins |
