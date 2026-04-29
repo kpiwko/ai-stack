@@ -20,25 +20,17 @@ and tool workflows live in plugins — see `plugins/` in this repo.
 4. **Prefer editing over creating** — edit existing files rather than creating new ones.
    Only create a new file when a clear responsibility or context is missing.
 
-5. **Keep instructions lean** — enough structure to be consistent, no walls of text.
-
 ---
 
 ## 2. Repository Structure
-
-### 2.1 Root — allowed files only
-
-`AGENTS.md`, `CLAUDE.md`, `TODO.md`, `README.md`, `LICENSE`, `.gitignore`,
-`.editorconfig`, tooling configs, dependency manifests. Nothing else.
-
-### 2.2 Common subfolders
 
 | Directory | Purpose |
 |---|---|
 | `src/` | Production source code |
 | `tests/` | All tests (unit, integration) |
 | `docs/` | Internal documentation |
-| `docs/adr/` | Architecture Decision Records |
+| `docs/principles/` | Cross-cutting decisions that constrain all future work |
+| `docs/superpowers/` | Work artifacts: specs and implementation plans |
 | `docs/research/` | Research notes, reusable frameworks |
 | `config/` | Configuration files (YAML, JSON, env templates) |
 | `scripts/` or `tools/` | Automation and utility scripts |
@@ -48,14 +40,24 @@ Infrastructure projects may add `pulumi/`, `kubernetes/` etc. as needed.
 
 ---
 
-## 3. Documentation & ADRs
+## 3. Principles
 
-- All internal docs go under `docs/` — never create new root-level `.md` files
-  except `README.md` and `TODO.md`.
-- **ADRs**: `docs/adr/NNNN-title-with-hyphens.md` — Status, Context, Decision,
-  Consequences. Maintain `docs/adr/README.md` as index.
-- Use an ADR when architecture, core tooling, or security/cost decisions have
-  long-term impact.
+`docs/principles/NNNN-title-with-hyphens.md` — for decisions that constrain all future
+work in this repo: tooling choices, build conventions, required script patterns.
+Maintain `docs/principles/README.md` as index.
+
+Template:
+
+```
+# Title
+Status: accepted | deprecated
+Constraint: one-line statement of what this mandates or forbids
+Why: the reason — a past incident, a cost decision, a technical constraint
+Applies to: what it constrains (all services / all skills / all MCP builds / etc.)
+```
+
+Everything else — feature design, implementation — flows through the superpowers
+workflow (`docs/superpowers/specs/` + `docs/superpowers/plans/`).
 
 ---
 
@@ -68,46 +70,7 @@ Infrastructure projects may add `pulumi/`, `kubernetes/` etc. as needed.
 
 ---
 
-## 5. AI & Human Collaboration
-
-**When AI changes code:**
-- Read relevant files before editing.
-- Keep imports at top; respect existing patterns.
-- For new features: consider security first, update docs, add tests.
-- For bug fixes: understand root cause first, add regression test.
-
-**When AI creates docs:**
-- Put them under `docs/` — not root.
-
-**When humans work:**
-- Keep `TODO.md` current; use ADRs for major decisions; prefer small focused commits.
-
----
-
-## 6. Pre-Action Checklists
-
-**Before creating a new file:**
-- [ ] Does an existing file already cover this responsibility?
-- [ ] Is it in the right folder?
-- [ ] Is the name clear and consistent?
-
-**Before committing:**
-- [ ] No working files in root.
-- [ ] `TODO.md` up to date.
-- [ ] Tests updated where appropriate.
-
----
-
-## 7. Security
-
-- Never commit secrets or credentials.
-- Validate user input at system boundaries only — trust internal code.
-- Follow principle of least privilege.
-- Log errors with context but never log sensitive data.
-
----
-
-## 8. Commit Style
+## 5. Commit Style
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -131,10 +94,6 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 
 ---
 
-## 9. Tool Usage (Claude Code)
+## 6. Tool Usage
 
-- Use the `Read` tool before editing any file.
-- Batch independent tool calls in a single message — never sequentially when
-  parallel is possible.
-- Make atomic, focused changes; avoid scope creep.
 - Use `Grep`/`Glob` for searching rather than `Bash` grep/find when possible.
