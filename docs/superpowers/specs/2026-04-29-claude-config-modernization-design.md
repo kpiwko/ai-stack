@@ -15,6 +15,9 @@ or repeated subcommands of the same tool.
 The goal is to bring both files in line with 2026 patterns, using
 `developer-practices-documentation` as a reference point.
 
+> Note: `settings.local.json` is gitignored and user-specific. The spec uses `$HOME`
+> as a placeholder; the implementation resolves it to the actual home directory path.
+
 ---
 
 ## Decisions
@@ -133,7 +136,7 @@ For any non-trivial task:
 | Languages/runtimes | `Bash(python3 *)`, `Bash(uv *)`, `Bash(fnm *)` |
 | Cloud/infra | `Bash(gcloud *)`, `Bash(starship *)`, `Bash(cr review *)` |
 | Web | `WebSearch`, `WebFetch(domain:github.com)` |
-| Read | `Read(//Users/kpiwko/**)`, `Read(//var/run/**)`, `Read(//opt/homebrew/**)` |
+| Read | `Read(//$HOME/**)`, `Read(//var/run/**)`, `Read(//opt/homebrew/**)` |
 | MCP | `mcp__plugin_context7_context7__resolve-library-id`, `mcp__plugin_context7_context7__query-docs` |
 
 Dropped: all dead one-offs — specific `sed` line ranges, hardcoded `git -C` paths
