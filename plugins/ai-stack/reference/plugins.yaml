@@ -13,3 +13,18 @@ plugins:
 
   - name: superpowers
     source: claude-plugins-official
+
+  - name: gopls-lsp
+    source: claude-plugins-official
+
+  - name: pyright-lsp
+    source: claude-plugins-official
+
+  - name: typescript-lsp
+    source: claude-plugins-official
+
+  - name: rust-analyzer-lsp
+    source: claude-plugins-official
+
+  - name: atlassian
+    source: claude-plugins-official
