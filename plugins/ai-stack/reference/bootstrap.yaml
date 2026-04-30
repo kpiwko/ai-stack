@@ -2,6 +2,9 @@
 #
 # required: true  → prerequisite; skill fails fast if missing (no install command)
 # required: false → managed tool; skill installs it if absent
+#
+# lsp_plugins: sequence of <name>@<source> — installed as Claude plugins
+# plugins/skills/mcps: paths to registry files processed by bootstrap steps 4-6
 
 languages:
   go:
@@ -37,14 +40,15 @@ languages:
       required: false
       install: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
 
-# LSP servers are now installed as official Claude plugins
+# LSP servers installed as official Claude plugins.
+# Format: <plugin-name>@<source>  (same name/source as in plugins.yaml)
 lsp_plugins:
   - gopls-lsp@claude-plugins-official
   - pyright-lsp@claude-plugins-official
   - typescript-lsp@claude-plugins-official
   - rust-analyzer-lsp@claude-plugins-official
 
-# Additional registry files read by bootstrap
+# Registry files processed by bootstrap (plugins, skills, MCP servers)
 plugins: plugins/ai-stack/reference/plugins.yaml
 skills:  plugins/ai-stack/reference/skills.yaml
 mcps:    plugins/ai-stack/reference/mcps.yaml
