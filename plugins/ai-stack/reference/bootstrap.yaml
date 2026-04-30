@@ -10,9 +10,6 @@ languages:
       check: go version
       required: true
       reason: "Install from https://go.dev/dl/"
-    lsp:
-      name: gopls
-      install: "go install golang.org/x/tools/gopls@latest"
 
   python:
     runtime:
@@ -20,9 +17,6 @@ languages:
       check: uv --version
       required: false
       install: "curl -LsSf https://astral.sh/uv/install.sh | sh"
-    lsp:
-      name: pyright
-      install: "uv tool install pyright"
 
   typescript:
     runtime:
@@ -35,9 +29,6 @@ languages:
       check: pnpm --version
       required: false
       install: "npm install -g pnpm"
-    lsp:
-      name: typescript-language-server
-      install: "pnpm add -g typescript typescript-language-server"
 
   rust:
     runtime:
@@ -45,6 +36,15 @@ languages:
       check: rustup --version
       required: false
       install: "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-    lsp:
-      name: rust-analyzer
-      install: "rustup component add rust-analyzer"
+
+# LSP servers are now installed as official Claude plugins
+lsp_plugins:
+  - gopls-lsp@claude-plugins-official
+  - pyright-lsp@claude-plugins-official
+  - typescript-lsp@claude-plugins-official
+  - rust-analyzer-lsp@claude-plugins-official
+
+# Additional registry files read by bootstrap
+plugins: plugins/ai-stack/reference/plugins.yaml
+skills:  plugins/ai-stack/reference/skills.yaml
+mcps:    plugins/ai-stack/reference/mcps.yaml
