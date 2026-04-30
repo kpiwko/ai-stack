@@ -11,7 +11,7 @@ a structured quarterly reflection aligned to company values.
 
 ## Requirements
 
-MCP servers: `gmail`, `mcp-atlassian`, `gdrive`
+MCP servers: `gmail`, `gdrive`; plugin: `atlassian`
 
 Environment:
 ```

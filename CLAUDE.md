@@ -31,13 +31,8 @@ Invoke the relevant skill before starting a task.
 | `/superpowers:executing-plans` | When running a written plan |
 | `/superpowers:systematic-debugging` | When encountering a bug |
 | `/superpowers:requesting-code-review` | Before merging |
-| `/ai-stack:bootstrap` | Set up LSP servers and runtimes |
-| `/ai-stack:add-entry` | Add plugin, skill, or MCP to the registry |
-| `/ai-stack:add-service` | Scaffold a new MCP service |
-| `/ai-stack:add-workflow` | Add CI workflow to an existing service |
-| `/ai-stack:install-plugins` | Install or update plugins |
-| `/ai-stack:install-skills` | Install or update skills |
-| `/ai-stack:install-mcps` | Register MCP servers |
+| `/ai-stack:bootstrap` | Full machine setup (runtimes, LSPs, plugins, skills, MCPs) |
+| `/ai-stack:modify` | Add, update, or remove a plugin/skill/MCP in the registry |
 | `/ai-stack:sandbox` | Install or update the LINCE toolkit |
 | `/dev:review-cr` | Run CodeRabbit review on committed changes |
 

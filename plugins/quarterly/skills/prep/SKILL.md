@@ -14,7 +14,7 @@ argument-hint: "[Q1|Q2|Q3|Q4] [year]"
 ```
 
 Reads `$JIRA_URL` from environment. Saves output to `reports/quarterly-data-<QN-YYYY>.md`.
-Uses MCP servers: `gmail`, `mcp-atlassian`, `gdrive`.
+Uses MCP servers: `gmail`, `gdrive`; uses plugin: `atlassian`.
 
 ## Quarter date ranges
 
@@ -62,7 +62,8 @@ Extract per thread: subject, key participants, date, 1–2 sentence summary of o
 
 ### Step 3: Jira activity
 
-Read `$JIRA_URL` from environment. Run JQL queries in parallel via `jira_search`.
+Read `$JIRA_URL` from environment. Derive `cloudId` by stripping the `https://` prefix.
+Run JQL queries in parallel via `searchJiraIssuesUsingJql` with `cloudId`.
 
 **All projects, all involvement** — find everything the user touched this quarter:
 ```
@@ -161,7 +162,7 @@ Next: /quarterly:connect  (reference this file in your prompt)
 
 **Gmail no results** — broaden date range by ±1 week; try `in:anywhere`.
 
-**Jira currentUser() fails** — use `jira_get_user_profile` to verify account, then substitute username directly.
+**Jira currentUser() fails** — use `atlassianUserInfo` to verify account, then substitute username directly.
 
 **Drive search times out** — use `listFolder` on known project folders; try monthly windows.
 

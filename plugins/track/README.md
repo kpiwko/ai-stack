@@ -11,7 +11,7 @@ Track decisions and work in external systems: Jira issues, Google Docs, Google D
 ## Requirements
 
 MCP servers must be running and registered:
-- `mcp-atlassian` — for `/track:jira`
+- `atlassian` plugin — for `/track:jira`
 - `gdrive` — for `/track:gdrive-doc` and `/track:gdrive-organize`
 
 Environment variables for Jira:
