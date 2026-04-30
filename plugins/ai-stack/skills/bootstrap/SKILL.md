@@ -10,8 +10,8 @@ description: Full machine setup — installs runtimes, LSP plugins, Claude plugi
 /ai-stack:bootstrap   ← check prerequisites, then install everything
 ```
 
-No arguments. Bootstrap is all-or-nothing — installs everything defined across the
-four reference files below.
+No arguments. Bootstrap runs all steps regardless of individual step failures — only
+the prerequisites check (Step 1) is fail-fast.
 
 ---
 
@@ -58,7 +58,7 @@ For each managed tool (`uv`, `pnpm`, `rustup`) from `bootstrap.yaml`, in order:
 2. If already present → record `already installed`.
 3. If missing → run its `install` command, then record `installed`.
 
-A failure in one does not stop the others — record `failed` and continue.
+A failure in one does not stop the others — record `FAILED` and continue.
 
 ### Step 3 — LSP plugins
 
@@ -76,7 +76,7 @@ For each entry in the `lsp_plugins` section of `bootstrap.yaml`:
   claude plugin install <name>@<source> --scope user
   ```
   where `<name>@<source>` is the full value from the list (e.g. `gopls-lsp@claude-plugins-official`).
-  Record `installed` or `failed`.
+  Record `installed` or `FAILED`.
 
 A failure in one does not stop the rest.
 
@@ -84,13 +84,16 @@ A failure in one does not stop the rest.
 
 Read `plugins/ai-stack/reference/plugins.yaml`. Compare against `claude plugin list` output.
 
-For each plugin not already installed:
+Skip any plugin already processed in Step 3 — they will already be installed, and omitting
+them from this section avoids duplicate rows in the summary.
+
+For each remaining plugin not already installed:
 
 ```bash
 claude plugin install <name>@<source> --scope user
 ```
 
-Record `already installed` / `installed` / `failed` for each.
+Record `already installed` / `installed` / `FAILED` for each.
 
 ### Step 5 — External skills
 
@@ -108,18 +111,18 @@ If missing, install via sparse git checkout:
 
 ```bash
 tmpdir=$(mktemp -d)
+trap 'rm -rf "$tmpdir"' EXIT
 git clone --depth 1 --filter=blob:none --sparse --branch <version> \
     https://github.com/<source> "$tmpdir"
 # if path is set:
 git -C "$tmpdir" sparse-checkout set <path>
 mkdir -p ~/.claude/skills/<name>
 cp -r "$tmpdir/<path>/." ~/.claude/skills/<name>/
-rm -rf "$tmpdir"
 ```
 
 If no `path` field, use the repo root (omit the `sparse-checkout set` step and copy from `$tmpdir` directly).
 
-Record `installed` or `failed`.
+Record `installed` or `FAILED`.
 
 ### Step 6 — MCP servers
 
@@ -131,15 +134,15 @@ claude mcp list
 
 Read `plugins/ai-stack/reference/mcps.yaml`. For each MCP:
 
-- If already registered → record `already registered`.
-- If `headers` contains `$VAR` references, expand from the current shell environment.
+- If already registered (match by name) → record `already registered`.
+- If any field value contains `$VAR` references, expand from the current shell environment.
   If a required env var is unset, record `skipped (<VAR> not set)` and skip — do not register with an empty value.
 - Otherwise register:
   ```bash
   claude mcp add --transport <transport> --scope <scope> \
     [--header "KEY: VALUE" ...] <name> <url>
   ```
-  Record `registered` or `failed`.
+  Record `registered` or `FAILED`.
 
 ### Step 7 — Summary
 
@@ -170,7 +173,7 @@ superpowers                 already installed
 
 Skills:
 template-slide-deck         installed
-n8n-skills                  failed
+n8n-skills                  FAILED
 
 MCPs:
 gmail                       already registered
@@ -181,4 +184,4 @@ devlake-local-mysql-mcp     skipped (DEVLAKE_MCP_SECRET_KEY not set)
 =========================
 ```
 
-If any item shows `failed`, print its error output beneath the table.
+If any item shows `FAILED`, print its error output beneath the table.

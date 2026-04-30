@@ -88,8 +88,10 @@ If not provided as arguments, ask:
 
 **For `update`:**
 
-Ask for the entry name. Read the current entry from the YAML and display it.
-Ask which fields to change; gather new values only for those fields.
+Ask for the entry name.
+
+- **built-in plugin**: find the row in the built-in table above; display it in full; ask which field to change (`name` or `description`); gather the new value.
+- **external plugin / skill / mcp**: read the current entry from the target YAML and display the full entry block; ask which fields to change; gather new values only for those fields.
 
 **For `remove`:**
 
@@ -97,10 +99,15 @@ Ask for the entry name.
 
 ### Step 3: Check entry existence
 
-- **add**: if entry already exists, show it and ask: update it or cancel?
-  - If update: treat as `update` from here, with patch version bump
-  - If cancel: exit
-- **update / remove**: find entry by name in the target file.
+- **add**: check whether the entry already exists:
+  - Built-in plugin: scan the inline table above by name.
+  - External plugin / skill / mcp: scan `plugins/ai-stack/reference/<type>s.yaml` by name.
+  - If found: show it and ask — update it or cancel?
+    - If update: treat as `update` from here, with patch version bump.
+    - If cancel: exit.
+- **update / remove**: find the entry by name:
+  - Built-in plugin: scan the inline table above.
+  - External: scan `plugins/ai-stack/reference/<type>s.yaml`.
   - If not found: show error and exit.
 
 ### Step 4: Preview
@@ -125,6 +132,9 @@ Version: plugins/ai-stack/.claude-plugin/plugin.json
 Proceed? (yes / cancel)
 ```
 
+Omit fields that do not apply to this entry type (e.g. `url`/`scope` for plugins and skills;
+`version` for MCPs if absent in the YAML).
+
 **remove:**
 ```
 === MODIFY PREVIEW ===
@@ -147,10 +157,11 @@ For built-in plugins, show the table row change in this file instead of a YAML b
 On confirmation:
 
 1. **Built-in plugin add**: insert a new row into the built-in table in this file, preserving row order and formatting.
-2. **Built-in plugin remove**: delete the matching row from the built-in table in this file.
-3. **External plugin / skill / mcp add or update**: append or replace the entry in the target YAML file, preserving existing entries, comments, and formatting.
-4. **External plugin / skill / mcp remove**: delete the matching entry block from the YAML file.
-5. Read `plugin.json` and bump the version:
+2. **Built-in plugin update**: modify the matching row in the built-in table, preserving formatting.
+3. **Built-in plugin remove**: delete the matching row from the built-in table in this file.
+4. **External plugin / skill / mcp add or update**: append or replace the entry in the target YAML file, preserving existing entries, comments, and formatting.
+5. **External plugin / skill / mcp remove**: delete the matching entry block from the YAML file.
+6. Read `plugin.json` and bump the version:
    - New entry added → increment minor, reset patch (e.g. `0.5.0` → `0.6.0`)
    - Entry updated or removed → increment patch only (e.g. `0.5.0` → `0.5.1`)
 
@@ -166,6 +177,9 @@ Ask: "Commit these changes? (yes / no)"
 
 If yes:
 ```bash
-git add <changed-file> plugins/ai-stack/.claude-plugin/plugin.json
+# Stage the file modified in step 5 plus plugin.json:
+# Built-in plugin changes: plugins/ai-stack/skills/modify/SKILL.md
+# External changes: plugins/ai-stack/reference/<type>s.yaml
+git add <modified-file> plugins/ai-stack/.claude-plugin/plugin.json
 git commit -m "chore(ai-stack): <add|update|remove> <type> <name>"
 ```
