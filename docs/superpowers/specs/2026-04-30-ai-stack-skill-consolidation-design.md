@@ -161,6 +161,49 @@ Remove rows for: `add-entry`, `add-service`, `add-workflow`, `install-plugins`, 
 
 ---
 
+## Section 6 — Update `track` and `quarterly` plugins for atlassian plugin
+
+Switching from `mcp-atlassian` (local HTTP MCP) to `atlassian@claude-plugins-official` changes
+tool names and calling conventions. The following files need updates.
+
+### Tool name mapping
+
+| Old (`mcp-atlassian`) | New (`atlassian` plugin) |
+|---|---|
+| `jira_search` | `searchJiraIssuesUsingJql` |
+| `jira_search_fields` | `getJiraIssueTypeMetaWithFields` / `getJiraProjectIssueTypesMetadata` |
+| `jira_create_issue` | `createJiraIssue` |
+| `jira_update_issue` | `editJiraIssue` |
+| `jira_create_issue_link` | `createIssueLink` |
+
+### Calling convention changes
+
+- **`cloudId`**: the atlassian plugin requires a `cloudId` parameter (e.g. `redhat.atlassian.net`) on every call. The skill should read `$JIRA_URL` from env and derive the hostname as the cloudId, or prompt the user.
+- **Content format**: `mcp-atlassian` auto-converted Markdown to ADF. The atlassian plugin accepts `contentFormat: "markdown"` directly — no manual ADF conversion needed.
+- **ADF note**: remove all references to ADF auto-conversion in skill prose.
+
+### Files to update
+
+**`plugins/track/skills/jira/SKILL.md`**
+- Replace synopsis line "Uses the `mcp-atlassian` MCP server" → "Uses the `atlassian` plugin"
+- Step 2: `jira_search` → `searchJiraIssuesUsingJql` (add `cloudId` param)
+- Step 3: `jira_search_fields` → `getJiraIssueTypeMetaWithFields` / `getJiraProjectIssueTypesMetadata`
+- Step 4: remove ADF conversion note; add `contentFormat: "markdown"` note
+- Step 6: `jira_create_issue` → `createJiraIssue`, `jira_update_issue` → `editJiraIssue`, `jira_create_issue_link` → `createIssueLink`
+- Troubleshooting: update tool names in all hints
+
+**`plugins/track/README.md`**
+- Replace `mcp-atlassian — for /track:jira` → `atlassian plugin — for /track:jira`
+
+**`plugins/quarterly/skills/prep/SKILL.md`**
+- Replace "Uses MCP servers: `gmail`, `mcp-atlassian`, `gdrive`" → "Uses MCP servers: `gmail`, `gdrive`; uses plugin: `atlassian`"
+- Step: `jira_search` → `searchJiraIssuesUsingJql` (add `cloudId` param)
+
+**`plugins/quarterly/README.md`**
+- Replace `mcp-atlassian` in the MCP server list with `atlassian` plugin
+
+---
+
 ## Version bump
 
 The plugin version in `plugins/ai-stack/.claude-plugin/plugin.json` gets a minor bump at the end:  
