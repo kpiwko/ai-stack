@@ -74,7 +74,7 @@ On approval, in this order:
 4. Apply `HEADING_2` subsections — all in parallel
 5. Apply bullets via `createParagraphBullets` — all in parallel
 6. Return the document URL
-7. If a related Jira issue exists, offer to add the Drive link via `jira_update_issue`
+7. If a related Jira issue exists, offer to add the Drive link via `editJiraIssue`
 
 **Critical:** `createGoogleDoc` and `updateGoogleDoc` paste raw text — no Markdown.
 Never use `##`, `-`, `**`, or `|tables|` in the content string. Apply all formatting

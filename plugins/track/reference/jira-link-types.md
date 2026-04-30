@@ -1,8 +1,7 @@
 # Jira Issue Link Types
 
-Use `jira_create_issue_link` with these link type names.
-Link type names are typically consistent across instances but verify with
-`jira_get_link_types` if a link fails.
+Use `createIssueLink` with these link type names.
+Link type names vary by instance — verify with `getIssueLinkTypes` if a link fails.
 
 ## Verified link types
 
@@ -19,5 +18,6 @@ Link type names are typically consistent across instances but verify with
 
 ## Description format
 
-Pass plain text or Markdown in the description field — `mcp-atlassian` converts
-it to Atlassian Document Format (ADF) automatically. Do not hand-craft ADF JSON.
+Pass `contentFormat: "markdown"` when calling `createIssueLink` or any write tool —
+the `atlassian` plugin converts Markdown to Atlassian Document Format (ADF) automatically.
+Do not hand-craft ADF JSON.

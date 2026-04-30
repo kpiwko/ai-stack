@@ -4,16 +4,16 @@ Jira field IDs are **instance-specific**. Never hardcode them — always discove
 
 ## How to discover fields
 
-Use `jira_search_fields` to list all available fields for your Jira instance:
+Use `getJiraProjectIssueTypesMetadata` to list issue types and `getJiraIssueTypeMetaWithFields` to inspect fields for a specific type:
+
 ```
-jira_search_fields(query="epic")
-jira_search_fields(query="story points")
-jira_search_fields(query="parent")
+getJiraProjectIssueTypesMetadata(cloudId=..., projectIdOrKey="PROJ")
+getJiraIssueTypeMetaWithFields(cloudId=..., projectIdOrKey="PROJ", issueTypeId="10014")
 ```
 
 ## Common fields to discover
 
-| Concept | What to search for | Notes |
+| Concept | What to look for | Notes |
 |---|---|---|
 | Epic label | `"epic name"` or `"epic label"` | Classic projects only; gives epic a short display name |
 | Epic Link | `"epic link"` | Classic: links Story/Task/Spike to an Epic |
@@ -26,30 +26,28 @@ jira_search_fields(query="parent")
 |---|---|---|
 | Link issue to Epic | `customfield_XXXXX` (Epic Link) | `parent: "PROJ-123"` (plain string) |
 | Epic display name | `customfield_XXXXX` (Epic Name) | Not needed — use summary |
-| Story Points | `customfield_XXXXX` via `jira_update_issue` | Same |
+| Story Points | `customfield_XXXXX` via `editJiraIssue` | Same |
 
 Check project type before creating issues — team-managed and classic use different field semantics.
-When in doubt, use `jira_search_fields` to confirm field availability and ID.
+When in doubt, use `getJiraIssueTypeMetaWithFields` to confirm field availability and ID.
 
 ## Story points workaround
 
 Story points cannot be set during issue creation. Always follow up:
 ```
-jira_update_issue(
-    issue_key="PROJ-123",
-    fields={},
-    additional_fields={"<story_points_field_id>": 3}
+editJiraIssue(
+    cloudId="yourorg.atlassian.net",
+    issueIdOrKey="PROJ-123",
+    fields={"customfield_XXXXX": 3}
 )
 ```
-
-`fields` is required — pass `{}` when updating only via `additional_fields`.
-Both must be dict objects, not JSON strings.
 
 ## Labels
 
 Pass labels via `additional_fields` at creation:
 ```
-jira_create_issue(
+createJiraIssue(
+    cloudId="yourorg.atlassian.net",
     ...,
     additional_fields={"labels": ["ai-generated", "topic-label"]}
 )
