@@ -1,4 +1,4 @@
-# 3rd party plugins installed via /ai-stack:install-plugins
+# 3rd party plugins installed via /ai-stack:bootstrap
 # Built-in ai-stack marketplace plugins (ai-stack, dev, track, quarterly) need no entry here.
 #
 # Format:

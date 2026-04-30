@@ -1,4 +1,4 @@
-# MCP servers registered via /ai-stack:install-mcps
+# MCP servers registered via /ai-stack:bootstrap
 #
 # Format:
 # - name: mcp-name
