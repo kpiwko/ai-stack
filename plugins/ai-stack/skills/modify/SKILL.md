@@ -77,6 +77,8 @@ If not provided as arguments, ask:
 - `source`: GitHub `owner/repo`
 - `path`: path inside the repo (omit if skill is at repo root)
 - `version`: tag, branch, or commit (default: `main`)
+- `optional`: if `true`, bootstrap skips this skill by default (default: `false`)
+- `scope`: `user` (~/.claude/skills/) or `project` (.claude/skills/ in repo root) (default: `user`)
 
 *mcp* — an MCP server to register with Claude Code:
 - `name`: server identifier (kebab-case)

@@ -99,10 +99,17 @@ Record `already installed` / `installed` / `FAILED` for each.
 
 Read `plugins/ai-stack/reference/skills.yaml`.
 
-For each skill, check user scope first:
+For each skill:
+
+- If `optional: true` → record `skipped (optional)` and continue.
+- Determine install path:
+  - `scope: project` → `.claude/skills/<name>` relative to the repo root
+  - All other values or unset → `~/.claude/skills/<name>`
+
+Check if already installed:
 
 ```bash
-ls ~/.claude/skills/<name> 2>/dev/null && echo "installed" || echo "missing"
+ls <install_path> 2>/dev/null && echo "installed" || echo "missing"
 ```
 
 If already present → record `already installed`.
@@ -116,8 +123,8 @@ git clone --depth 1 --filter=blob:none --sparse --branch <version> \
     https://github.com/<source> "$tmpdir"
 # if path is set:
 git -C "$tmpdir" sparse-checkout set <path>
-mkdir -p ~/.claude/skills/<name>
-cp -r "$tmpdir/<path>/." ~/.claude/skills/<name>/
+mkdir -p <install_path>
+cp -r "$tmpdir/<path>/." <install_path>/
 ```
 
 If no `path` field, use the repo root (omit the `sparse-checkout set` step and copy from `$tmpdir` directly).
@@ -135,6 +142,7 @@ claude mcp list
 Read `plugins/ai-stack/reference/mcps.yaml`. For each MCP:
 
 - If already registered (match by name) → record `already registered`.
+- If `scope` is not set, default to `user`.
 - If any field value contains `$VAR` references, expand from the current shell environment.
   If a required env var is unset, record `skipped (<VAR> not set)` and skip — do not register with an empty value.
 - Otherwise register:
@@ -172,8 +180,8 @@ context7                    already installed
 superpowers                 already installed
 
 Skills:
-template-slide-deck         installed
-n8n-skills                  FAILED
+template-slide-deck         skipped (optional)
+n8n-skills                  skipped (optional)
 
 MCPs:
 gmail                       already registered
