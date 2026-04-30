@@ -1,5 +1,5 @@
 ---
-description: Install LSP servers and their runtimes for Go, Python, TypeScript, and Rust.
+description: Full machine setup — installs runtimes, LSP plugins, Claude plugins, skills, and registers MCP servers.
 ---
 
 # /ai-stack:bootstrap
@@ -7,19 +7,25 @@ description: Install LSP servers and their runtimes for Go, Python, TypeScript, 
 ## Synopsis
 
 ```
-/ai-stack:bootstrap   ← check prerequisites, install managed tools and LSP servers
+/ai-stack:bootstrap   ← check prerequisites, then install everything
 ```
 
-No arguments. Bootstrap is all-or-nothing — installs everything defined in
-`plugins/ai-stack/reference/bootstrap.yaml`.
+No arguments. Bootstrap is all-or-nothing — installs everything defined across the
+four reference files below.
 
 ---
 
-## Reference
+## Reference files
 
-`plugins/ai-stack/reference/bootstrap.yaml` is the source of truth for what gets
-checked and installed. Read it to get exact tool names, check commands, and install
-commands before running any step.
+| What | File |
+|---|---|
+| Runtimes + package managers | `plugins/ai-stack/reference/bootstrap.yaml` |
+| LSP plugins | `plugins/ai-stack/reference/bootstrap.yaml` (`lsp_plugins` section) |
+| Claude plugins | `plugins/ai-stack/reference/plugins.yaml` |
+| External skills | `plugins/ai-stack/reference/skills.yaml` |
+| MCP servers | `plugins/ai-stack/reference/mcps.yaml` |
+
+Read all files before starting any step.
 
 ---
 
@@ -34,7 +40,7 @@ command -v go   && go version   || echo "go: MISSING"
 command -v node && node --version || echo "node: MISSING"
 ```
 
-If either `go` or `node` is missing, stop immediately and display:
+If either is missing, stop immediately and display:
 
 ```
 ✗ <tool>: not found
@@ -44,42 +50,135 @@ If either `go` or `node` is missing, stop immediately and display:
 
 Do not proceed to Step 2.
 
-### Step 2 — Runtime / package manager installs
+### Step 2 — Runtimes / package managers
 
-For each managed tool (`uv`, `pnpm`, `rustup`) in order:
+For each managed tool (`uv`, `pnpm`, `rustup`) from `bootstrap.yaml`, in order:
 
 1. Run its `check` command.
 2. If already present → record `already installed`.
-3. If missing → run its `install` command from `bootstrap.yaml`, then record `installed`.
+3. If missing → run its `install` command, then record `installed`.
 
-Run checks and installs sequentially. A failure in one does not stop the others — record
-`failed` and continue.
+A failure in one does not stop the others — record `failed` and continue.
 
-### Step 3 — LSP server installs
+### Step 3 — LSP plugins
 
-Install all four LSP servers in order, using commands from `bootstrap.yaml`:
+Check current plugin state:
 
-1. `gopls` — `go install golang.org/x/tools/gopls@latest`
-2. `pyright` — `uv tool install pyright`
-3. `typescript-language-server` — `pnpm add -g typescript typescript-language-server`
-4. `rust-analyzer` — `rustup component add rust-analyzer`
+```bash
+claude plugin list
+```
 
-A failure in one does not stop the rest. Record outcome for each.
+For each entry in the `lsp_plugins` section of `bootstrap.yaml`:
 
-### Step 4 — Summary
+- If already installed → record `already installed`.
+- If missing → run:
+  ```bash
+  claude plugin install <name>@<source> --scope user
+  ```
+  where `<name>@<source>` is the full value from the list (e.g. `gopls-lsp@claude-plugins-official`).
+  Record `installed` or `failed`.
 
-Print a compact status table covering every item checked or installed:
+A failure in one does not stop the rest.
+
+### Step 4 — Claude plugins
+
+Read `plugins/ai-stack/reference/plugins.yaml`. Compare against `claude plugin list` output.
+
+For each plugin not already installed:
+
+```bash
+claude plugin install <name>@<source> --scope user
+```
+
+Record `already installed` / `installed` / `failed` for each.
+
+### Step 5 — External skills
+
+Read `plugins/ai-stack/reference/skills.yaml`.
+
+For each skill, check user scope first:
+
+```bash
+ls ~/.claude/skills/<name> 2>/dev/null && echo "installed" || echo "missing"
+```
+
+If already present → record `already installed`.
+
+If missing, install via sparse git checkout:
+
+```bash
+tmpdir=$(mktemp -d)
+git clone --depth 1 --filter=blob:none --sparse --branch <version> \
+    https://github.com/<source> "$tmpdir"
+# if path is set:
+git -C "$tmpdir" sparse-checkout set <path>
+mkdir -p ~/.claude/skills/<name>
+cp -r "$tmpdir/<path>/." ~/.claude/skills/<name>/
+rm -rf "$tmpdir"
+```
+
+If no `path` field, use the repo root (omit the `sparse-checkout set` step and copy from `$tmpdir` directly).
+
+Record `installed` or `failed`.
+
+### Step 6 — MCP servers
+
+Check currently registered MCPs:
+
+```bash
+claude mcp list
+```
+
+Read `plugins/ai-stack/reference/mcps.yaml`. For each MCP:
+
+- If already registered → record `already registered`.
+- If `headers` contains `$VAR` references, expand from the current shell environment.
+  If a required env var is unset, record `skipped (<VAR> not set)` and skip — do not register with an empty value.
+- Otherwise register:
+  ```bash
+  claude mcp add --transport <transport> --scope <scope> \
+    [--header "KEY: VALUE" ...] <name> <url>
+  ```
+  Record `registered` or `failed`.
+
+### Step 7 — Summary
+
+Print a compact status table covering every item processed:
 
 ```
-go                          ok   (prerequisite)
-node                        ok   (prerequisite)
+=== BOOTSTRAP SUMMARY ===
+
+Prerequisites:
+go                          ok
+node                        ok
+
+Runtimes:
 uv                          installed
 pnpm                        already installed
-rustup                      installed
-gopls                       ok
-pyright                     ok
-typescript-language-server  ok
-rust-analyzer               ok
+rustup                      already installed
+
+LSP plugins:
+gopls-lsp                   already installed
+pyright-lsp                 already installed
+typescript-lsp              installed
+rust-analyzer-lsp           installed
+
+Plugins:
+atlassian                   already installed
+context7                    already installed
+superpowers                 already installed
+
+Skills:
+template-slide-deck         installed
+n8n-skills                  failed
+
+MCPs:
+gmail                       already registered
+gdrive                      registered
+devlake-prod-mysql-mcp      skipped (KONFLUX_MCP_SECRET_KEY not set)
+devlake-local-mysql-mcp     skipped (DEVLAKE_MCP_SECRET_KEY not set)
+
+=========================
 ```
 
-If any item failed, list it with `FAILED` and show the error output beneath the table.
+If any item shows `failed`, print its error output beneath the table.
