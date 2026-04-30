@@ -16,11 +16,6 @@ mcps:
     url: http://localhost:17633/mcp
     scope: user
 
-  - name: mcp-atlassian
-    transport: http
-    url: http://localhost:17000/mcp
-    scope: user
-
   - name: gdrive
     transport: http
     url: http://localhost:17100/mcp
