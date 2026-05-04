@@ -52,14 +52,33 @@ claude plugin install ai-stack@ai-stack
 All three commands are interactive: they show what's available, what's already installed,
 and let you pick scope (user / project / local) before making any changes.
 
-**Updating plugins:**
+**3. Install LSP servers and language runtimes:**
 
 ```
+/ai-stack:bootstrap
+```
+
+Sets up Go, Python (pyright), TypeScript, and Rust language servers for code intelligence
+in Claude Code.
+
+**Updating plugins:**
+
+```bash
 claude plugin marketplace update ai-stack
 claude plugin update ai-stack@ai-stack
 ```
 
 Restart Claude Code after updating for changes to take effect.
+
+**Updating plugins inside the agent-sandbox (LINCE):**
+
+The sandbox uses an isolated Claude config at `~/.agent-sandbox/claude-config/`.
+Target it explicitly with `CLAUDE_CONFIG_DIR`:
+
+```bash
+CLAUDE_CONFIG_DIR=~/.agent-sandbox/claude-config claude plugin marketplace update ai-stack
+CLAUDE_CONFIG_DIR=~/.agent-sandbox/claude-config claude plugin update ai-stack@ai-stack
+```
 
 ## Just recipes
 

@@ -90,9 +90,9 @@ RUN --mount=type=secret,id=rh_username \
     && dnf clean all && rm -rf /var/cache/dnf
 
 RUN pip install --upgrade pip uv \
-    && uv tool install notebooklm-mcp-cli==0.6.1 \
+    && uv tool install notebooklm-mcp-cli==0.6.3 \
     && pip install playwright \
-    && playwright install --only-shell chromium \
+    && playwright install chromium \
     && pip uninstall -y playwright
 
 ENV DISPLAY=:99 \

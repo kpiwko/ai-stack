@@ -6,7 +6,7 @@
 
 **Architecture:** Single-stage UBI9 Python 3.12 container running four processes via an entrypoint script: Xvfb (virtual display), x11vnc, noVNC/websockify, and the MCP server. Credentials are bind-mounted from the host so they survive restarts. noVNC (port 6080) is only used at initial auth and cookie refresh; the MCP endpoint (port 17200) is the day-to-day interface.
 
-**Tech Stack:** `registry.access.redhat.com/ubi9/python-312`, EPEL (x11vnc, noVNC), uv, `notebooklm-mcp-cli==0.6.1`, Playwright Chromium, GitHub Actions (`docker/build-push-action`), ghcr.io.
+**Tech Stack:** `registry.access.redhat.com/ubi9/python-312`, EPEL (x11vnc, noVNC), uv, `notebooklm-mcp-cli==0.6.3`, Playwright Chromium, GitHub Actions (`docker/build-push-action`), ghcr.io.
 
 ---
 
@@ -103,9 +103,9 @@ RUN --mount=type=secret,id=rh_username \
     && dnf clean all && rm -rf /var/cache/dnf
 
 RUN pip install --upgrade pip uv \
-    && uv tool install notebooklm-mcp-cli==0.6.1 \
+    && uv tool install notebooklm-mcp-cli==0.6.3 \
     && pip install playwright \
-    && playwright install --only-shell chromium \
+    && playwright install chromium \
     && pip uninstall -y playwright
 
 ENV DISPLAY=:99 \
