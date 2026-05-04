@@ -34,3 +34,8 @@ mcps:
     headers:
       Authorization: "Bearer $DEVLAKE_MCP_SECRET_KEY"
     scope: local
+
+  - name: notebooklm
+    transport: http
+    url: http://localhost:17200/mcp
+    scope: user
