@@ -39,8 +39,8 @@ and bind-mounted into the container, so they survive container restarts and rebu
 
 ## New Repository: `kpiwko/notebooklm-mcp`
 
-A standalone GitHub repo separate from ai-stack. The ai-stack repo only references the
-published image.
+A git submodule at `mcp/notebooklm-mcp`, following the existing `mcp/gmail` pattern.
+The ai-stack repo references the published image; the submodule holds the Containerfile and CI.
 
 ### Repository structure
 
@@ -57,7 +57,7 @@ README.md
 ### `Containerfile`
 
 ```dockerfile
-FROM registry.access.redhat.com/ubi9/python-312:latest
+FROM registry.redhat.io/ubi9/python-312:latest
 
 LABEL name="notebooklm-mcp" \
       summary="NotebookLM MCP Server" \
@@ -66,17 +66,27 @@ LABEL name="notebooklm-mcp" \
 
 USER root
 
-# EPEL provides x11vnc and noVNC (pulls in websockify); Chromium system deps below
-RUN dnf install -y \
-    https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+# Conditionally register RHEL subscription if secrets are provided (CI path).
+# Locally, Podman Desktop's RHEL podman machine passes the host subscription through automatically.
+# EPEL provides x11vnc and noVNC (websockify); xorg-x11-server-Xvfb and xorg-x11-utils from AppStream.
+RUN --mount=type=secret,id=rh_username \
+    --mount=type=secret,id=rh_password \
+    if [ -f /run/secrets/rh_username ]; then \
+      subscription-manager register \
+        --username=$(cat /run/secrets/rh_username) \
+        --password=$(cat /run/secrets/rh_password); \
+    fi \
     && dnf install -y \
-    xorg-x11-server-Xvfb x11vnc novnc \
-    alsa-lib at-spi2-atk at-spi2-core atk cairo cups-libs \
-    dbus-libs expat flac-libs gdk-pixbuf2 glib2 glibc gtk3 \
-    libX11 libXcomposite libXdamage libXext libXfixes libXrandr \
-    libXtst libcanberra-gtk3 libdrm libgcc libstdc++ libxcb \
-    libxkbcommon libxshmfence libxslt mesa-libgbm nspr nss \
-    nss-util pango zlib \
+      https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm \
+    && dnf install -y \
+      xorg-x11-server-Xvfb x11vnc novnc xorg-x11-utils \
+      alsa-lib at-spi2-atk at-spi2-core atk cairo cups-libs \
+      dbus-libs expat flac-libs gdk-pixbuf2 glib2 glibc gtk3 \
+      libX11 libXcomposite libXdamage libXext libXfixes libXrandr \
+      libXtst libcanberra-gtk3 libdrm libgcc libstdc++ libxcb \
+      libxkbcommon libxshmfence libxslt mesa-libgbm nspr nss \
+      nss-util pango zlib \
+    && subscription-manager unregister 2>/dev/null || true \
     && dnf clean all && rm -rf /var/cache/dnf
 
 RUN pip install --upgrade pip uv \
@@ -117,9 +127,10 @@ exec notebooklm-mcp --transport http --port 17200
 
 Standard GitHub Actions workflow:
 - Trigger: push to `main`, tags `v*`
-- Build with `podman build` or `docker/build-push-action`
-- Push to `ghcr.io/kpiwko/notebooklm-mcp:latest` and `ghcr.io/kpiwko/notebooklm-mcp:<tag>`
-- No Red Hat registry credentials needed (base image is `registry.access.redhat.com` — anonymous pull)
+- Log in to `registry.redhat.io` using `RH_USERNAME` / `RH_PASSWORD` repository secrets before build
+- Pass secrets as `--secret id=rh_username` / `--secret id=rh_password` build args so `subscription-manager` can register during the RUN layer
+- Build and push to `ghcr.io/kpiwko/notebooklm-mcp:latest` and `ghcr.io/kpiwko/notebooklm-mcp:<tag>` using `docker/build-push-action`
+- Locally, Podman Desktop's RHEL machine passes the host RHEL subscription through — no extra flags needed
 
 ---
 
@@ -168,9 +179,9 @@ Standard GitHub Actions workflow:
 
 ## Implementation checklist
 
-### Repo: `kpiwko/notebooklm-mcp`
-- [ ] Create GitHub repo `kpiwko/notebooklm-mcp`
-- [ ] Write `Containerfile`
+### Repo: `kpiwko/notebooklm-mcp` (submodule at `mcp/notebooklm-mcp`)
+- [ ] Create GitHub repo `kpiwko/notebooklm-mcp` and add as submodule
+- [ ] Write `Containerfile` (UBI9 + conditional subscription-manager)
 - [ ] Write `scripts/entrypoint.sh`
 - [ ] Write `.github/workflows/build.yaml` (build + push to ghcr.io)
 - [ ] Smoke-test: build locally, verify MCP endpoint starts headlessly
