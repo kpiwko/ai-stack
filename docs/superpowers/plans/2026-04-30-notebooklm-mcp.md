@@ -332,12 +332,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # registry.redhat.io uses a service account token (separate from RHSM credentials).
+      # Create one at https://access.redhat.com/terms-based-registry/
+      # Store as RH_REGISTRY_USER (username like "12345678|servicename") and RH_REGISTRY_TOKEN.
       - name: Log in to registry.redhat.io
         uses: docker/login-action@v3
         with:
           registry: registry.redhat.io
-          username: ${{ secrets.RH_USERNAME }}
-          password: ${{ secrets.RH_PASSWORD }}
+          username: ${{ secrets.RH_REGISTRY_USER }}
+          password: ${{ secrets.RH_REGISTRY_TOKEN }}
 
       - name: Log in to ghcr.io
         uses: docker/login-action@v3
@@ -357,6 +360,9 @@ jobs:
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
+      # RHSM_ORG = organization ID from https://console.redhat.com/insights/connector/activation-keys
+      # RHSM_KEY = activation key name from the same page
+      # These are passed as build secrets so subscription-manager can register inside the RUN layer.
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -365,8 +371,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           secrets: |
-            rh_username=${{ secrets.RH_USERNAME }}
-            rh_password=${{ secrets.RH_PASSWORD }}
+            rhsm_org=${{ secrets.RHSM_ORG }}
+            rhsm_key=${{ secrets.RHSM_KEY }}
 EOF
 ```
 

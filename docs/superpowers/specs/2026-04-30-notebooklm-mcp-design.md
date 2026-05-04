@@ -127,8 +127,8 @@ exec notebooklm-mcp --transport http --port 17200
 
 Standard GitHub Actions workflow:
 - Trigger: push to `main`, tags `v*`
-- Log in to `registry.redhat.io` using `RH_USERNAME` / `RH_PASSWORD` repository secrets before build
-- Pass secrets as `--secret id=rh_username` / `--secret id=rh_password` build args so `subscription-manager` can register during the RUN layer
+- Log in to `registry.redhat.io` using `RH_REGISTRY_USER` / `RH_REGISTRY_TOKEN` repository secrets (service account token from https://access.redhat.com/terms-based-registry/)
+- Pass `RHSM_ORG` / `RHSM_KEY` as `--secret` build args so `subscription-manager register --org --activationkey` can run during the RUN layer (activation keys from https://console.redhat.com/insights/connector/activation-keys)
 - Build and push to `ghcr.io/kpiwko/notebooklm-mcp:latest` and `ghcr.io/kpiwko/notebooklm-mcp:<tag>` using `docker/build-push-action`
 - Locally, Podman Desktop's RHEL machine passes the host RHEL subscription through — no extra flags needed
 
