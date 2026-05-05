@@ -32,8 +32,8 @@ Read both files before starting any step.
 Run:
 
 ```bash
-command -v podman && podman compose version 2>/dev/null && echo "podman" \
-  || command -v docker && docker compose version 2>/dev/null && echo "docker" \
+(command -v podman >/dev/null 2>&1 && podman compose version >/dev/null 2>&1 && echo "podman") \
+  || (command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1 && echo "docker") \
   || echo "MISSING"
 ```
 
@@ -100,6 +100,8 @@ If any placeholder lines are found, display:
   JIRA_API_TOKEN              mcp-atlassian
   DEVLAKE_MCP_SECRET_KEY      devlake-local-mysql-mcp
   KONFLUX_MYSQL_HOST          devlake-prod-mysql-mcp
+  KONFLUX_MYSQL_USER          devlake-prod-mysql-mcp
+  KONFLUX_MYSQL_PASS          devlake-prod-mysql-mcp
   KONFLUX_MCP_SECRET_KEY      devlake-prod-mysql-mcp
 
   Edit .env and re-run /ai-stack:up when ready.
