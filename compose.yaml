@@ -153,5 +153,6 @@ services:
     environment:
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      WORKSPACE_EXTERNAL_URL: http://localhost:17150
       OAUTHLIB_INSECURE_TRANSPORT: "1"
     restart: unless-stopped
