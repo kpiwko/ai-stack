@@ -140,7 +140,8 @@ services:
   # workspace-mcp — Google Workspace MCP server, streamable HTTP transport
   # Covers: Gmail, Drive, Calendar, Docs, Sheets, Slides, Forms, Apps Script
   # MCP endpoint: http://localhost:17150/mcp
-  # Auth (first run): open http://localhost:17150/ in your browser
+  # Auth (first run): make any Google Workspace tool call — workspace-mcp returns
+  #   a clickable auth URL; complete the Google OAuth flow in your browser.
   ##############################################################################
   workspace-mcp:
     image: ghcr.io/kpiwko/workspace-mcp:latest
@@ -152,4 +153,5 @@ services:
     environment:
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      OAUTHLIB_INSECURE_TRANSPORT: "1"
     restart: unless-stopped
