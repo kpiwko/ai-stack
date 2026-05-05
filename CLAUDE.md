@@ -31,6 +31,7 @@ Invoke the relevant skill before starting a task.
 | `/superpowers:executing-plans` | When running a written plan |
 | `/superpowers:systematic-debugging` | When encountering a bug |
 | `/superpowers:requesting-code-review` | Before merging |
+| `/ai-stack:up` | Start the container stack (idempotent; copies compose.yaml + .env if missing) |
 | `/ai-stack:bootstrap` | Full machine setup (runtimes, LSPs, plugins, skills, MCPs) |
 | `/ai-stack:modify` | Add, update, or remove a plugin/skill/MCP in the registry |
 | `/ai-stack:sandbox` | Install or update the LINCE toolkit |
