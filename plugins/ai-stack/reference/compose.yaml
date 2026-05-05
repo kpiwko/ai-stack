@@ -133,7 +133,7 @@ services:
       - "17200:17200"
       - "17201:6080"
     volumes:
-      - /Users/kpiwko/.config/notebooklm-mcp-cli:/root/.config/notebooklm-mcp-cli
+      - ${HOME}/.config/notebooklm-mcp-cli:/root/.config/notebooklm-mcp-cli
     restart: unless-stopped
 
   ##############################################################################
@@ -149,7 +149,7 @@ services:
     ports:
       - "17150:8000"
     volumes:
-      - /Users/kpiwko/.config/workspace-mcp:/root/.config/workspace-mcp
+      - ${HOME}/.config/workspace-mcp:/root/.config/workspace-mcp
     environment:
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
