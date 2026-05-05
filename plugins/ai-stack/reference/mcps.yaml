@@ -11,16 +11,6 @@
 #   scope: user | project | local      # default scope (overridable at install time)
 
 mcps:
-  - name: gmail
-    transport: http
-    url: http://localhost:17633/mcp
-    scope: user
-
-  - name: gdrive
-    transport: http
-    url: http://localhost:17100/mcp
-    scope: user
-
   - name: devlake-prod-mysql-mcp
     transport: http
     url: http://localhost:17300/mcp
@@ -38,4 +28,9 @@ mcps:
   - name: notebooklm
     transport: http
     url: http://localhost:17200/mcp
+    scope: user
+
+  - name: workspace-mcp
+    transport: http
+    url: http://localhost:17150/mcp
     scope: user

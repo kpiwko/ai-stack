@@ -16,9 +16,8 @@
 #   devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (port 17301)
 #                             Requires DevLake MySQL running on host port 3306.
 #   devlake-prod-mysql-mcp  — MySQL MCP proxy for remote Konflux RDS (port 17300)
-#   gmail-mcp            — Gmail MCP server, streamable HTTP transport (port 17633)
 #   mcp-atlassian        — Jira MCP server, streamable HTTP transport (port 17000)
-#   gdrive-mcp           — Google Drive MCP server, streamable HTTP transport (port 17100)
+#   workspace-mcp        — Google Workspace MCP server, streamable HTTP transport (port 17150)
 
 name: ai-stack
 
@@ -104,25 +103,6 @@ services:
     restart: unless-stopped
 
   ##############################################################################
-  # Gmail MCP — MCP server providing Gmail access via Device Authorization flow
-  # Image built by CI: ghcr.io/kpiwko/gmail-mcp-server:latest
-  # Auth page  : http://localhost:17633/auth  (first run — authorizes via browser)
-  # MCP endpoint: http://localhost:17633/mcp
-  ##############################################################################
-  gmail-mcp:
-    image: ghcr.io/kpiwko/gmail-mcp-server:latest
-    networks: [ai-stack]
-    ports:
-      - "17633:6633"
-    volumes:
-      - /Users/kpiwko/.config/gmail-mcp-server:/config/gmail-mcp-server
-    environment:
-      GMAIL_CLIENT_ID: ${GMAIL_CLIENT_ID}
-      GMAIL_CLIENT_SECRET: ${GMAIL_CLIENT_SECRET}
-      XDG_CONFIG_HOME: /config
-    restart: unless-stopped
-
-  ##############################################################################
   # mcp-atlassian — Jira MCP server, streamable HTTP transport
   # MCP endpoint: http://localhost:17000/mcp
   # Register: claude mcp add --transport http --scope user mcp-atlassian http://localhost:17000/mcp
@@ -140,30 +120,6 @@ services:
     restart: unless-stopped
 
   ##############################################################################
-  # gdrive-mcp — Google Drive MCP server, streamable HTTP transport
-  # Prereq: authenticate once outside the container first:
-  #   npx @piotr-agier/google-drive-mcp auth
-  # MCP endpoint: http://localhost:17100/mcp
-  # Register: claude mcp add --transport http --scope user gdrive http://localhost:17100/mcp
-  ##############################################################################
-  gdrive-mcp:
-    image: registry.access.redhat.com/ubi9/nodejs-22:latest
-    networks: [ai-stack]
-    ports:
-      - "17100:3100"
-    command: ["npx", "-y", "@piotr-agier/google-drive-mcp", "start"]
-    volumes:
-      - /Users/kpiwko/.config/google-drive-mcp/credentials.json:/config/credentials.json:ro
-      - /Users/kpiwko/.config/google-drive-mcp/tokens.json:/config/tokens.json
-    environment:
-      GOOGLE_DRIVE_OAUTH_CREDENTIALS: /config/credentials.json
-      GOOGLE_DRIVE_MCP_TOKEN_PATH: /config/tokens.json
-      MCP_TRANSPORT: http
-      MCP_HTTP_PORT: "3100"
-      MCP_HTTP_HOST: "0.0.0.0"
-    restart: unless-stopped
-
-  ##############################################################################
   # notebooklm-mcp — NotebookLM MCP server, streamable HTTP transport
   # MCP endpoint: http://localhost:17200/mcp
   # Auth (first run or cookie refresh):
@@ -178,4 +134,22 @@ services:
       - "6080:6080"
     volumes:
       - /Users/kpiwko/.config/notebooklm-mcp-cli:/root/.config/notebooklm-mcp-cli
+    restart: unless-stopped
+
+  ##############################################################################
+  # workspace-mcp — Google Workspace MCP server, streamable HTTP transport
+  # Covers: Gmail, Drive, Calendar, Docs, Sheets, Slides, Forms, Apps Script
+  # MCP endpoint: http://localhost:17150/mcp
+  # Auth (first run): open http://localhost:17150/ in your browser
+  ##############################################################################
+  workspace-mcp:
+    image: ghcr.io/kpiwko/workspace-mcp:latest
+    networks: [ai-stack]
+    ports:
+      - "17150:8000"
+    volumes:
+      - /Users/kpiwko/.config/workspace-mcp:/root/.config/workspace-mcp
+    environment:
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
     restart: unless-stopped
