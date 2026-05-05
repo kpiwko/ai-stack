@@ -123,7 +123,7 @@ services:
   # notebooklm-mcp — NotebookLM MCP server, streamable HTTP transport
   # MCP endpoint: http://localhost:17200/mcp
   # Auth (first run or cookie refresh):
-  #   1. open http://localhost:6080/vnc.html
+  #   1. open http://localhost:17201/vnc.html
   #   2. podman exec -it ai-stack-notebooklm-mcp-1 nlm login
   ##############################################################################
   notebooklm-mcp:
@@ -131,7 +131,7 @@ services:
     networks: [ai-stack]
     ports:
       - "17200:17200"
-      - "6080:6080"
+      - "17201:6080"
     volumes:
       - /Users/kpiwko/.config/notebooklm-mcp-cli:/root/.config/notebooklm-mcp-cli
     restart: unless-stopped

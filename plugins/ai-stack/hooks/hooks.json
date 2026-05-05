@@ -2,7 +2,7 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "mcp__workspace_mcp__.*",
+        "matcher": "mcp__workspace-mcp__.*",
         "hooks": [
           {
             "type": "command",
