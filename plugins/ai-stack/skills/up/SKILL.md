@@ -96,8 +96,6 @@ If any placeholder lines are found, display:
 
   GOOGLE_OAUTH_CLIENT_ID      workspace-mcp (Google OAuth)
   GOOGLE_OAUTH_CLIENT_SECRET  workspace-mcp (Google OAuth)
-  JIRA_USERNAME               mcp-atlassian
-  JIRA_API_TOKEN              mcp-atlassian
   DEVLAKE_MCP_SECRET_KEY      devlake-local-mysql-mcp
   KONFLUX_MYSQL_HOST          devlake-prod-mysql-mcp
   KONFLUX_MYSQL_USER          devlake-prod-mysql-mcp
@@ -137,8 +135,6 @@ Print a formatted summary:
 
 Service                   Status     Endpoint
 ───────────────────────────────────────────────────────────
-ai-beacon                 running    http://localhost:17090
-mcp-atlassian             running    http://localhost:17000/mcp
 notebooklm-mcp            running    http://localhost:17200/mcp
                                      noVNC: http://localhost:17201/vnc.html
 workspace-mcp             running    http://localhost:17150/mcp

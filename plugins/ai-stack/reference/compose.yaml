@@ -12,12 +12,11 @@
 #   podman compose up -d <name>    # start one service
 #
 # Services:
-#   ai-beacon            — AI Beacon session manager for multiple Claude sessions (port 17090)
 #   devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (port 17301)
 #                             Requires DevLake MySQL running on host port 3306.
 #   devlake-prod-mysql-mcp  — MySQL MCP proxy for remote Konflux RDS (port 17300)
-#   mcp-atlassian        — Jira MCP server, streamable HTTP transport (port 17000)
-#   workspace-mcp        — Google Workspace MCP server, streamable HTTP transport (port 17150)
+#   notebooklm-mcp          — NotebookLM MCP server (port 17200)
+#   workspace-mcp           — Google Workspace MCP server, streamable HTTP transport (port 17150)
 
 name: ai-stack
 
@@ -25,26 +24,7 @@ networks:
   ai-stack:
     driver: bridge
 
-volumes:
-  ai-beacon-data: {}
-
 services:
-
-  ##############################################################################
-  # AI Beacon — session manager for multiple Claude sessions
-  # URL: http://localhost:17090
-  ##############################################################################
-  ai-beacon:
-    image: ghcr.io/manusa/ai-beacon:latest
-    networks: [ai-stack]
-    ports:
-      - "17090:8080"
-    volumes:
-      - ai-beacon-data:/data
-    environment:
-      AI_BEACON_DATA_DIR: /data
-      AI_BEACON_AUTH_PASSWORD: ${AI_BEACON_AUTH_PASSWORD:-demo}
-    restart: unless-stopped
 
   ##############################################################################
   # devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (read-only)
@@ -100,23 +80,6 @@ services:
       IS_REMOTE_MCP: "true"
       PORT: "3000"
       REMOTE_SECRET_KEY: ${KONFLUX_MCP_SECRET_KEY}
-    restart: unless-stopped
-
-  ##############################################################################
-  # mcp-atlassian — Jira MCP server, streamable HTTP transport
-  # MCP endpoint: http://localhost:17000/mcp
-  # Register: claude mcp add --transport http --scope user mcp-atlassian http://localhost:17000/mcp
-  ##############################################################################
-  mcp-atlassian:
-    image: ghcr.io/sooperset/mcp-atlassian:latest
-    networks: [ai-stack]
-    ports:
-      - "17000:9000"
-    command: ["--transport", "streamable-http", "--port", "9000"]
-    environment:
-      JIRA_URL: ${JIRA_URL:-https://redhat.atlassian.net}
-      JIRA_USERNAME: ${JIRA_USERNAME}
-      JIRA_API_TOKEN: ${JIRA_API_TOKEN}
     restart: unless-stopped
 
   ##############################################################################

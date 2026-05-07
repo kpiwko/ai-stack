@@ -1,6 +1,3 @@
-[submodule "mcp/gmail"]
-	path = mcp/gmail
-	url = https://github.com/kpiwko/gmail-mcp-server.git
 [submodule "mcp/notebooklm-mcp"]
 	path = mcp/notebooklm-mcp
 	url = git@github.com:kpiwko/notebooklm-mcp.git
