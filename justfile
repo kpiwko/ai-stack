@@ -123,7 +123,7 @@ eval skill='all' pattern='' repeat='1':
         args=( --config "$cfg" --no-cache )
         [[ -n "{{pattern}}" ]] && args+=( --filter-pattern "{{pattern}}" )
         [[ "{{repeat}}" != "1" ]] && args+=( --repeat "{{repeat}}" )
-        npx --yes promptfoo eval "${args[@]}"
+        npx --yes promptfoo@latest eval "${args[@]}"
     done
 
 # Launch Claude Code in an OpenShell sandbox with Vertex AI credentials.
