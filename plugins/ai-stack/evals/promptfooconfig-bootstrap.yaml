@@ -1,0 +1,66 @@
+description: /ai-stack:bootstrap skill evals
+
+# NOTE: bootstrap evals run against real machine state (they register MCPs,
+# install runtimes). These are integration tests, not unit tests. Run manually
+# on a clean dev machine or CI. Gate CI on up/down/project-init only.
+
+providers:
+  - id: exec
+    config:
+      command: bash tools/run-skill.sh bootstrap {{scenario}}
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: |
+        try { JSON.parse(output); return true; }
+        catch(e) { return { pass: false, reason: 'runner did not emit valid JSON' }; }
+
+tests:
+  - description: "Prerequisites pass: BOOTSTRAP SUMMARY appears in output"
+    vars:
+      scenario: default
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!r.output.includes('BOOTSTRAP SUMMARY')) return { pass: false, reason: 'summary missing — skill may have aborted at prerequisites' };
+          if (/go.*MISSING|node.*MISSING/.test(r.output)) return { pass: false, reason: 'prerequisite check failed' };
+          return { pass: true };
+
+  - description: "Already-installed runtimes: marked 'already installed' in summary"
+    vars:
+      scenario: default
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!r.output.includes('already installed')) return { pass: false, reason: 'no "already installed" rows — expected at least one managed runtime to be present' };
+          return { pass: true };
+
+  - description: "force: managed runtimes show 'installed' not 'already installed'"
+    vars:
+      scenario: force
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          const lines = r.output.split('\n');
+          const uvLine = lines.find(l => l.includes('uv'));
+          if (!uvLine) return { pass: false, reason: 'uv row missing from summary' };
+          if (uvLine.includes('already installed')) return { pass: false, reason: 'uv was skipped despite force' };
+          return { pass: true };
+
+  - description: "Unset MCP env var: MCP skipped with reason shown"
+    vars:
+      scenario: default
+    assert:
+      - type: javascript
+        value: |
+          // Only meaningful when DEVLAKE_MCP_SECRET_KEY is unset.
+          // If the var is set in the environment, this test is a no-op (returns pass).
+          const r = JSON.parse(output);
+          if (process.env.DEVLAKE_MCP_SECRET_KEY) return { pass: true };
+          if (!r.output.includes('DEVLAKE_MCP_SECRET_KEY not set'))
+            return { pass: false, reason: 'MCP skip reason not shown for unset var' };
+          return { pass: true };
