@@ -35,6 +35,7 @@ Invoke the relevant skill before starting a task.
 | `/ai-stack:bootstrap` | Full machine setup (runtimes, LSPs, plugins, skills, MCPs) |
 | `/ai-stack:modify` | Add, update, or remove a plugin/skill/MCP in the registry |
 | `/ai-stack:down` | Stop the container stack |
+| `/ai-stack:status` | Check service health |
 | `/ai-stack:project-init` | Initialise current directory (CLAUDE.md, AGENTS.md, optional skills) |
 | `/dev:review-cr` | Run CodeRabbit review on committed changes |
 
