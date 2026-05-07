@@ -1,0 +1,60 @@
+description: /ai-stack:up skill evals
+
+providers:
+  - id: exec
+    config:
+      command: bash tools/run-skill.sh up {{scenario}}
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: |
+        try { JSON.parse(output); return true; }
+        catch(e) { return { pass: false, reason: 'runner did not emit valid JSON: ' + output.slice(0,300) }; }
+
+tests:
+  - description: "Fresh directory: compose.yaml and .env created, summary shown"
+    vars:
+      scenario: fresh
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!r.state.compose_exists)       return { pass: false, reason: 'compose.yaml not created' };
+          if (!r.state.env_exists)           return { pass: false, reason: '.env not created' };
+          if (!r.output.includes('ai-stack UP')) return { pass: false, reason: 'summary header missing from output' };
+          return { pass: true };
+
+  - description: "Existing compose.yaml: not overwritten (idempotent)"
+    vars:
+      scenario: existing-compose
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.state.compose_content !== 'original') return { pass: false, reason: 'compose.yaml was overwritten' };
+          if (!r.output.includes('ai-stack UP'))      return { pass: false, reason: 'summary missing' };
+          return { pass: true };
+
+  - description: "Placeholder .env: warning shown, skill does not abort"
+    vars:
+      scenario: placeholder-env
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/Fill in|⚠/.test(r.output))        return { pass: false, reason: 'no placeholder warning shown' };
+          if (!r.output.includes('ai-stack UP'))   return { pass: false, reason: 'skill aborted instead of continuing' };
+          return { pass: true };
+
+  - description: "No .env: template copied, placeholder warning shown"
+    vars:
+      scenario: no-env
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!r.state.env_exists)           return { pass: false, reason: '.env not created from template' };
+          if (!r.state.compose_exists)       return { pass: false, reason: 'compose.yaml not created' };
+          if (!/Fill in|⚠/.test(r.output))  return { pass: false, reason: 'no placeholder warning shown' };
+          return { pass: true };
