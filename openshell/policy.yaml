@@ -7,17 +7,21 @@ version: 1
 # isolation for Claude Code instances) is configured via nono profiles in
 # lince/lince-dashboard/nono-profiles/lince-claude.json.
 #
-# All services are reached via host.openshell.internal, which resolves to
+# Local services are reached via host.containers.internal, which resolves to
 # the gateway host IP. Because that IP is in an RFC 1918 private range,
-# allowed_ips is required on every endpoint to override the SSRF guard.
+# allowed_ips is required on every local endpoint to override the SSRF guard.
+# External endpoints use public IPs and do not need allowed_ips.
+#
+# Binary check is L4-enforced (always enforced, regardless of enforcement:
+# audit/enforce). Only listed binaries may connect to each endpoint.
+# Add /usr/bin/curl to test connectivity manually; remove when not needed.
+#
+# MCP servers use HTTP POST for tool calls, so all HTTP endpoints use:
+#   protocol: rest + access: full  (allows GET, POST, PUT, PATCH, DELETE)
+# External HTTPS endpoints use protocol: rest + tls: terminate + access: full.
 #
 # Usage:
-#   openshell sandbox create --policy ./openshell-policy.yaml -- <command>
-#
-# Only start the compose profiles you need before launching the sandbox:
-#   podman compose --profile ai-beacon up -d
-#   podman compose --profile gmail-mcp up -d
-#   ...
+#   openshell sandbox create --policy ./openshell/policy.yaml -- <command>
 
 filesystem_policy:
   include_workdir: true
@@ -27,99 +31,179 @@ landlock:
 
 network_policies:
 
-  # profile: ai-beacon — knowledge base / prompt library UI
-  # http://host.openshell.internal:17090
-  ai-beacon:
-    name: ai-beacon
+  # Claude Code — Anthropic API + telemetry endpoints required for claude to run
+  # Source: OpenShell providers/claude.yaml
+  claude:
+    name: claude
     endpoints:
-      - host: host.openshell.internal
-        port: 17090
+      - host: api.anthropic.com
+        port: 443
         protocol: rest
+        tls: terminate
         enforcement: audit
-        allowed_ips:
-          - "10.0.0.0/8"
-          - "172.16.0.0/12"
-          - "192.168.0.0/16"
+        access: full
+      - host: statsig.anthropic.com
+        port: 443
+        protocol: rest
+        tls: terminate
+        enforcement: audit
+        access: full
+      - host: sentry.io
+        port: 443
+        protocol: rest
+        tls: terminate
+        enforcement: audit
+        access: full
+      - host: platform.claude.com
+        port: 443
+        protocol: rest
+        tls: terminate
+        enforcement: audit
+        access: full
+      - host: aiplatform.googleapis.com
+        port: 443
+        protocol: rest
+        tls: terminate
+        enforcement: audit
+        access: full
+      - host: oauth2.googleapis.com
+        port: 443
+        protocol: rest
+        tls: terminate
+        enforcement: audit
+        access: full
     binaries:
       - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/claude }
 
   # profile: devlake-local-mysql-mcp — read-only MySQL MCP proxy for local DevLake DB
-  # http://host.openshell.internal:17301/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
+  # http://host.containers.internal:17301/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
   devlake-local-mcp:
     name: devlake-local-mcp
     endpoints:
-      - host: host.openshell.internal
+      - host: host.containers.internal
         port: 17301
         protocol: rest
         enforcement: audit
+        access: full
         allowed_ips:
           - "10.0.0.0/8"
           - "172.16.0.0/12"
           - "192.168.0.0/16"
     binaries:
       - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/curl }
 
   # profile: devlake-prod-mysql-mcp — read-only MySQL MCP proxy for Konflux prod RDS
-  # http://host.openshell.internal:17300/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
+  # http://host.containers.internal:17300/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
   devlake-prod-mcp:
     name: devlake-prod-mcp
     endpoints:
-      - host: host.openshell.internal
+      - host: host.containers.internal
         port: 17300
         protocol: rest
         enforcement: audit
+        access: full
         allowed_ips:
           - "10.0.0.0/8"
           - "172.16.0.0/12"
           - "192.168.0.0/16"
     binaries:
       - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/curl }
 
-  # profile: mcp-atlassian — Jira MCP server (streamable HTTP transport)
-  # http://host.openshell.internal:17000/mcp
+  # mcp-atlassian — Jira/Confluence MCP (external Atlassian cloud)
+  # https://mcp.atlassian.com/v1/mcp
   mcp-atlassian:
     name: mcp-atlassian
     endpoints:
-      - host: host.openshell.internal
-        port: 17000
+      - host: mcp.atlassian.com
+        port: 443
         protocol: rest
+        tls: terminate
         enforcement: audit
-        allowed_ips:
-          - "10.0.0.0/8"
-          - "172.16.0.0/12"
-          - "192.168.0.0/16"
+        access: full
     binaries:
       - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/curl }
 
-  # profile: gdrive-mcp — Google Drive MCP server (streamable HTTP transport)
-  # http://host.openshell.internal:17100/mcp
-  gdrive-mcp:
-    name: gdrive-mcp
+  # profile: workspace-mcp — Google Workspace MCP (Docs, Sheets, Gmail, Calendar, Drive)
+  # http://host.containers.internal:17150/mcp
+  workspace-mcp:
+    name: workspace-mcp
     endpoints:
-      - host: host.openshell.internal
-        port: 17100
+      - host: host.containers.internal
+        port: 17150
         protocol: rest
         enforcement: audit
+        access: full
         allowed_ips:
           - "10.0.0.0/8"
           - "172.16.0.0/12"
           - "192.168.0.0/16"
     binaries:
       - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/curl }
 
-  # profile: gmail-mcp — Gmail MCP server (streamable HTTP transport)
-  # http://host.openshell.internal:17633/mcp
-  gmail-mcp:
-    name: gmail-mcp
+  # profile: notebooklm-mcp — NotebookLM MCP server
+  # http://host.containers.internal:17200/mcp
+  notebooklm-mcp:
+    name: notebooklm-mcp
     endpoints:
-      - host: host.openshell.internal
-        port: 17633
+      - host: host.containers.internal
+        port: 17200
         protocol: rest
         enforcement: audit
+        access: full
         allowed_ips:
           - "10.0.0.0/8"
           - "172.16.0.0/12"
           - "192.168.0.0/16"
     binaries:
       - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/curl }
 
+  # github — Claude Code plugin marketplace (plugins are hosted on GitHub)
+  github:
+    name: github
+    endpoints:
+      - host: github.com
+        port: 443
+        protocol: rest
+        enforcement: audit
+        access: full
+      - host: api.github.com
+        port: 443
+        protocol: rest
+        enforcement: audit
+        access: full
+      - host: raw.githubusercontent.com
+        port: 443
+        protocol: rest
+        enforcement: audit
+        access: full
+      - host: codeload.github.com
+        port: 443
+        protocol: rest
+        enforcement: audit
+        access: full
+    binaries:
+      - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/claude }
+      - { path: /usr/bin/git }
+      - { path: /usr/bin/curl }
+
+  # context7 — MCP documentation server (external)
+  # https://mcp.context7.com/mcp
+  context7:
+    name: context7
+    endpoints:
+      - host: mcp.context7.com
+        port: 443
+        protocol: rest
+        tls: terminate
+        enforcement: audit
+        access: full
+    binaries:
+      - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/curl }
