@@ -3,22 +3,10 @@ set dotenv-load
 default:
     @just --list
 
-# Start all compose services
-up:
-    podman compose up -d
-
-# Stop all compose services
-down:
-    podman compose down
-
-# Show compose service status
-status:
-    podman compose ps
-
 # Build OpenShell binaries + sideload image, restart the gateway, and register the vertex-claude provider.
 # Pass force=true to rebuild even when binaries/image already exist.
 # Requires env: OPENSHELL_DIR, ANTHROPIC_VERTEX_PROJECT_ID, CLAUDE_CODE_USE_VERTEX, CLOUD_ML_REGION
-sandbox-bootstrap rebuild='':
+openshell-bootstrap rebuild='':
     #!/bin/bash
     set -euo pipefail
     [[ -f .env ]] && { set -a; source .env; set +a; }
@@ -54,7 +42,7 @@ sandbox-bootstrap rebuild='':
         echo "==> Installing openshell gateway..."
         cargo install --locked --path crates/openshell-server --bin openshell-gateway --root ~/.local
     else
-        echo "==> Gateway binary exists — skipping build (just sandbox-bootstrap rebuild to force)"
+        echo "==> Gateway binary exists — skipping build (just openshell-bootstrap rebuild to force)"
     fi
 
     if [[ -n "{{rebuild}}" ]] || ! podman image exists "$SUPERVISOR_IMAGE" 2>/dev/null; then
@@ -66,7 +54,7 @@ sandbox-bootstrap rebuild='':
             podman tag openshell/supervisor:dev "$SUPERVISOR_IMAGE"
         fi
     else
-        echo "==> Sideload image $SUPERVISOR_IMAGE exists — skipping (just sandbox-bootstrap rebuild to force)"
+        echo "==> Sideload image $SUPERVISOR_IMAGE exists — skipping (just openshell-bootstrap rebuild to force)"
     fi
 
     echo "==> Stopping any running gateway..."
@@ -93,7 +81,7 @@ sandbox-bootstrap rebuild='':
     echo "==> Done. Gateway PID: $GATEWAY_PID"
 
 # Delete all sandboxes, stop the OpenShell gateway, and clean up sandbox staging files.
-sandbox-teardown:
+openshell-teardown:
     #!/bin/bash
     set -euo pipefail
     GATEWAY_PORT="${OPENSHELL_PORT:-17711}"
@@ -114,7 +102,7 @@ sandbox-teardown:
 # Generates claude-vertex-wrapper dynamically from current env vars — no credentials stored in repo.
 # Requires env: OPENSHELL_DIR, ANTHROPIC_VERTEX_PROJECT_ID, CLAUDE_CODE_USE_VERTEX,
 #               CLOUD_ML_REGION, GOOGLE_APPLICATION_CREDENTIALS
-sandbox:
+openshell:
     #!/bin/bash
     set -euo pipefail
     [[ -f .env ]] && { set -a; source .env; set +a; }
