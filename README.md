@@ -6,12 +6,10 @@ Personal AI tooling stack: Podman Compose services for MCP servers, plus Claude 
 
 | Service | Port | Description |
 |---|---|---|
-| ai-beacon | 17090 | Session manager for multiple Claude sessions |
 | devlake-local-mysql-mcp | 17301 | Read-only MCP proxy for local DevLake MySQL |
 | devlake-prod-mysql-mcp | 17300 | Read-only MCP proxy for remote Konflux RDS |
-| gmail-mcp | 17633 | Gmail MCP server (search, draft, attachments) |
-| mcp-atlassian | 17000 | Jira MCP server (streamable HTTP transport) |
-| gdrive-mcp | 17100 | Google Drive MCP server (streamable HTTP transport) |
+| notebooklm-mcp | 17200 | NotebookLM MCP server |
+| workspace-mcp | 17150 | Google Workspace MCP (Gmail, Drive, Calendar, Docs, Sheets) |
 
 ## Quick start
 
@@ -27,7 +25,7 @@ cp env.example .env
 ```bash
 just up
 # or selectively:
-podman compose up -d gmail-mcp mcp-atlassian
+podman compose up -d workspace-mcp notebooklm-mcp
 ```
 
 Container images are built by CI and published to `ghcr.io/kpiwko/` — no local build needed.
@@ -41,25 +39,20 @@ claude plugin marketplace add https://github.com/kpiwko/ai-stack.git --scope use
 claude plugin install ai-stack@ai-stack
 ```
 
-**2. Use it inside a Claude session to set up everything else:**
-
-```
-/ai-stack:install-plugins   ← install dev, track, quarterly plugins
-/ai-stack:install-skills    ← install bare skills (template-slide-deck, n8n-skills)
-/ai-stack:install-mcps      ← register MCP servers with Claude Code
-```
-
-All three commands are interactive: they show what's available, what's already installed,
-and let you pick scope (user / project / local) before making any changes.
-
-**3. Install LSP servers and language runtimes:**
+**2. Run bootstrap inside a Claude session to set up everything:**
 
 ```
 /ai-stack:bootstrap
 ```
 
-Sets up Go, Python (pyright), TypeScript, and Rust language servers for code intelligence
-in Claude Code.
+This installs runtimes (uv, pnpm, rustup), LSP plugins (gopls, pyright, typescript-lsp, rust-analyzer),
+Claude plugins (superpowers, context7, atlassian, dev, track, quarterly), and registers MCP servers.
+
+**3. Install or update the LINCE toolkit:**
+
+```
+/ai-stack:sandbox
+```
 
 **Updating plugins:**
 
@@ -70,39 +63,22 @@ claude plugin update ai-stack@ai-stack
 
 Restart Claude Code after updating for changes to take effect.
 
-**Updating plugins inside the agent-sandbox (LINCE):**
-
-The sandbox uses an isolated Claude config at `~/.agent-sandbox/claude-config/`.
-Target it explicitly with `CLAUDE_CONFIG_DIR`:
-
-```bash
-CLAUDE_CONFIG_DIR=~/.agent-sandbox/claude-config claude plugin marketplace update ai-stack
-CLAUDE_CONFIG_DIR=~/.agent-sandbox/claude-config claude plugin update ai-stack@ai-stack
-```
-
 ## Just recipes
 
 ```bash
-just up       # podman compose up -d
-just down     # podman compose down
-just status   # podman compose ps
+just up                        # podman compose up -d
+just down                      # podman compose down
+just status                    # podman compose ps
+just sandbox-bootstrap         # build OpenShell gateway + sideload image, start gateway, register provider
+just sandbox-bootstrap rebuild # force rebuild even if binaries/image already exist
+just sandbox                   # generate Vertex AI wrapper and launch Claude Code in a sandbox
+just sandbox-teardown          # delete sandboxes, stop gateway, clean up staging files
 ```
-
-## gmail-mcp
-
-The container bind-mounts `~/.config/gmail-mcp-server/` so tokens from a previous run are
-reused automatically. On first run, authorize via browser:
-
-```bash
-open http://localhost:17633/auth   # complete Google Device Authorization
-```
-
-Then register with Claude Code via `/ai-stack:install-mcps`.
 
 ## devlake-local-mysql-mcp
 
 Connects to a DevLake MySQL instance running on the host at port 3306. Start DevLake's
-MySQL service first, then register this MCP via `/ai-stack:install-mcps`. The command
+MySQL service first, then register this MCP via `/ai-stack:bootstrap`. The command
 reads `$DEVLAKE_MCP_SECRET_KEY` from the environment — make sure `.env` is sourced first.
 
 **Optional: connect via shared Podman network instead of host port**
@@ -129,61 +105,48 @@ that network and reach MySQL by container name — no host port exposure needed.
        MYSQL_HOST: mysql   # replace with DevLake's MySQL container name
    ```
 
-## mcp-atlassian (Jira)
+## notebooklm-mcp
 
-Credentials come from `.env`: `JIRA_URL`, `JIRA_USERNAME`, `JIRA_API_TOKEN`. Start the
-service then register via `/ai-stack:install-mcps`.
-
-## gdrive-mcp (Google Drive)
-
-Authenticate on the host before starting the container — the server cannot open a browser
-inside the container:
+On first run (or when cookies expire), authenticate via the bundled VNC browser:
 
 ```bash
-npx @piotr-agier/google-drive-mcp auth
+open http://localhost:17201/vnc.html
+podman exec -it ai-stack-notebooklm-mcp-1 nlm login
 ```
 
-This writes `credentials.json` and `tokens.json` into `~/.config/google-drive-mcp/`.
-Then start the service and register via `/ai-stack:install-mcps`.
+## workspace-mcp
+
+On first run, make any Google Workspace tool call — the server returns a clickable OAuth
+URL. Complete the Google OAuth flow in your browser. Credentials are stored in
+`~/.config/workspace-mcp/` and reused on subsequent runs.
 
 ## OpenShell sandboxes
 
-`openshell/policy.yaml` grants sandbox access to all services in this stack.
-Services are reached via `host.openshell.internal` (OpenShell injects this as an alias
-for the gateway host IP). Private IP ranges are explicitly allowlisted to override the
-built-in SSRF guard.
+> **Note:** Running Claude Code in an OpenShell sandbox with Vertex AI currently requires
+> a manual credential wrapper (`just sandbox`). This is a workaround until OpenShell adds
+> native Vertex AI support (tracked in NVIDIA/OpenShell issue #472). Once that lands, the
+> workflow simplifies to `openshell sandbox create -- claude` with a configured provider.
 
-### Rootful Podman required
+`openshell/policy.yaml` grants sandbox network access to all MCP services in this stack.
+Local services are reached via `host.containers.internal` (injected by the Podman driver).
+Private IP ranges are explicitly allowlisted to override the built-in SSRF guard.
 
-OpenShell's gateway runs k3s inside a container. k3s requires kernel interfaces
-(`/dev/kmsg`, OOM tuning, network namespaces) unavailable in rootless Podman.
+See `openshell/bootstrap.md` for full setup instructions and known issues.
 
-Switch once:
-
-```bash
-podman machine stop
-podman machine set --rootful
-podman machine start
-podman compose pull   # re-pull images (rootful/rootless use separate stores)
-```
-
-### Gateway port
-
-OpenShell's gateway defaults to port 8080, which conflicts with services here.
-Start it on a free port:
+### Quick workflow
 
 ```bash
-openshell gateway start --port 17711
+# One-time setup (or after OpenShell git pull):
+just sandbox-bootstrap
+
+# Each session:
+just sandbox
+
+# Tear everything down:
+just sandbox-teardown
 ```
 
-### Launching a sandbox
-
-```bash
-podman compose up -d gmail-mcp devlake-local-mysql-mcp
-openshell sandbox create --policy ./openshell/policy.yaml -- claude
-```
-
-From inside the sandbox, services are reachable at `host.openshell.internal:<port>`.
+Gateway logs go to `/tmp/openshell-gateway.log`.
 
 ## macOS notes
 
