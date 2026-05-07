@@ -14,8 +14,10 @@ skills:
     path: template-slide-deck
     version: main
     optional: true
+    scope: project
 
   - name: n8n-skills
     source: czlonkowski/n8n-skills
     version: main
     optional: true
+    scope: project
