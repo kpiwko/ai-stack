@@ -47,14 +47,13 @@ Restart Claude Code after updating for changes to take effect.
 ## Just recipes
 
 ```bash
-just up                        # podman compose up -d
-just down                      # podman compose down
-just status                    # podman compose ps
-just sandbox-bootstrap         # build OpenShell gateway + sideload image, start gateway, register provider
-just sandbox-bootstrap rebuild # force rebuild even if binaries/image already exist
-just sandbox                   # generate Vertex AI wrapper and launch Claude Code in a sandbox
-just sandbox-teardown          # delete sandboxes, stop gateway, clean up staging files
+just openshell-bootstrap         # build OpenShell gateway + sideload image, start gateway, register provider
+just openshell-bootstrap rebuild # force rebuild even if binaries/image already exist
+just openshell                   # generate Vertex AI wrapper and launch Claude Code in a sandbox
+just openshell-teardown          # delete sandboxes, stop gateway, clean up staging files
 ```
+
+Stack lifecycle (`up`, `down`, `status`) is handled by the `/ai-stack:up` and `/ai-stack:down` Claude skills.
 
 ## devlake-local-mysql-mcp
 
@@ -135,13 +134,13 @@ gateway, which the plugin cannot manage):
 
 ```bash
 # One-time setup (or after OpenShell git pull):
-just sandbox-bootstrap
+just openshell-bootstrap
 
 # Each session:
-just sandbox
+just openshell
 
 # Tear everything down:
-just sandbox-teardown
+just openshell-teardown
 ```
 
 `openshell/policy.yaml` grants sandbox network access to all MCP services in this stack.

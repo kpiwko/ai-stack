@@ -139,10 +139,10 @@ All env vars are read from `.env` (loaded automatically by `just`). Copy
 
 | Goal | What it does |
 |---|---|
-| `just sandbox-bootstrap` | Check prereqs, build binaries + sideload image, restart gateway, register provider |
-| `just sandbox-bootstrap force=true` | Same but forces rebuild of binaries and sideload image |
-| `just sandbox` | Generate wrapper from env vars, stage credentials, launch sandbox |
-| `just sandbox-teardown` | Kill the gateway and clean up `/tmp/cs/` |
+| `just openshell-bootstrap` | Check prereqs, build binaries + sideload image, restart gateway, register provider |
+| `just openshell-bootstrap force=true` | Same but forces rebuild of binaries and sideload image |
+| `just openshell` | Generate wrapper from env vars, stage credentials, launch sandbox |
+| `just openshell-teardown` | Kill the gateway and clean up `/tmp/cs/` |
 
 Required `.env` keys (see `env.example` for the full template):
 
@@ -154,7 +154,7 @@ CLAUDE_CODE_USE_VERTEX=1
 CLOUD_ML_REGION=global
 ```
 
-`sandbox-bootstrap` checks that `bash sccache mise gh z3 cargo` are all in
+`openshell-bootstrap` checks that `bash sccache mise gh z3 cargo` are all in
 `PATH` and that Podman is running before attempting any build. It skips the
 binary build and sideload image build when they already exist; pass `force=true`
 to rebuild unconditionally.
@@ -169,7 +169,7 @@ cargo build -p openshell-server --bin openshell-gateway --release
 cargo install --locked --path crates/openshell-server --bin openshell-gateway --root ~/.local
 ```
 
-Register the provider (lost on every gateway restart — `just sandbox-bootstrap`
+Register the provider (lost on every gateway restart — `just openshell-bootstrap`
 handles this automatically):
 
 ```bash
