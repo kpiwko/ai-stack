@@ -4,10 +4,11 @@ description: /ai-stack:bootstrap skill evals
 # install runtimes). These are integration tests, not unit tests. Run manually
 # on a clean dev machine or CI. Gate CI on up/down/project-init only.
 
+prompts:
+  - '{{scenario}}'
+
 providers:
-  - id: exec
-    config:
-      command: bash tools/run-skill.sh bootstrap {{scenario}}
+  - 'exec: bash tools/run-skill.sh bootstrap'
 
 defaultTest:
   assert:

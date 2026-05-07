@@ -1,9 +1,10 @@
 description: /ai-stack:up skill evals
 
+prompts:
+  - '{{scenario}}'
+
 providers:
-  - id: exec
-    config:
-      command: bash tools/run-skill.sh up {{scenario}}
+  - 'exec: bash tools/run-skill.sh up'
 
 defaultTest:
   assert:

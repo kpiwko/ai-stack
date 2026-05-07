@@ -1,9 +1,10 @@
 description: /ai-stack:project-init skill evals
 
+prompts:
+  - '{{scenario}}'
+
 providers:
-  - id: exec
-    config:
-      command: bash tools/run-skill.sh project-init {{scenario}}
+  - 'exec: bash tools/run-skill.sh project-init'
 
 defaultTest:
   assert:

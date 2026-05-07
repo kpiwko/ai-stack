@@ -5,7 +5,8 @@
 set -euo pipefail
 
 SKILL="${1:?skill required (up|down|bootstrap|project-init)}"
-SCENARIO="${2:-default}"
+SCENARIO=$(cat)
+[[ -z "$SCENARIO" ]] && SCENARIO="default"
 EVAL_DIR=$(mktemp -d)
 trap 'rm -rf "$EVAL_DIR"' EXIT
 

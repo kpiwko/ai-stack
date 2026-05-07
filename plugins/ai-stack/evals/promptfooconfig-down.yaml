@@ -1,9 +1,10 @@
 description: /ai-stack:down skill evals
 
+prompts:
+  - '{{scenario}}'
+
 providers:
-  - id: exec
-    config:
-      command: bash tools/run-skill.sh down {{scenario}}
+  - 'exec: bash tools/run-skill.sh down'
 
 defaultTest:
   assert:
