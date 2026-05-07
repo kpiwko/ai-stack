@@ -47,6 +47,9 @@ Restart Claude Code after updating for changes to take effect.
 ## Just recipes
 
 ```bash
+just lince-bootstrap             # install or update LINCE toolkit (agent-sandbox, lince-dashboard)
+just lince                       # launch the LINCE dashboard
+
 just openshell-bootstrap         # build OpenShell gateway + sideload image, start gateway, register provider
 just openshell-bootstrap rebuild # force rebuild even if binaries/image already exist
 just openshell                   # generate Vertex AI wrapper and launch Claude Code in a sandbox
@@ -113,14 +116,15 @@ isolated sandboxes with enterprise governance controls.
 > It uses `bubblewrap` (Linux) or `nono` (macOS) for filesystem/process isolation and
 > Zellij for multi-agent session management.
 
-Install or update via the plugin skill:
+Install or update via just:
 
-```
-/ai-stack:sandbox
+```bash
+just lince-bootstrap
 ```
 
-This installs `agent-sandbox`, the `lince-dashboard` Zellij plugin, and supporting scripts
-from the local `lince/` checkout.
+This runs the interactive quickstart installer from the local `lince/` checkout, installing
+`agent-sandbox`, the `lince-dashboard` Zellij plugin, and supporting scripts. Launch the
+dashboard with `just lince`.
 
 ### OpenShell (Podman + network policy enforcement)
 
