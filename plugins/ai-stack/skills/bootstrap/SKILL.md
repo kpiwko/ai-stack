@@ -7,11 +7,12 @@ description: Full machine setup — installs runtimes, LSP plugins, Claude plugi
 ## Synopsis
 
 ```
-/ai-stack:bootstrap   ← check prerequisites, then install everything
+/ai-stack:bootstrap          ← check prerequisites, then install everything
+/ai-stack:bootstrap force    ← reinstall / re-register everything, even if already present
 ```
 
-No arguments. Bootstrap runs all steps regardless of individual step failures — only
-the prerequisites check (Step 1) is fail-fast.
+Bootstrap runs all steps regardless of individual step failures — only the prerequisites
+check (Step 1) is fail-fast. Without `force`, already-installed items are skipped.
 
 ---
 
@@ -55,10 +56,10 @@ Do not proceed to Step 2.
 For each managed tool (`uv`, `pnpm`, `rustup`) from `bootstrap.yaml`, in order:
 
 1. Run its `check` command.
-2. If already present → record `already installed`.
-3. If missing → run its `install` command, then record `installed`.
+2. If already present and `force` not passed → record `already installed`.
+3. If missing, or if `force` was passed → run its `install` command, then record `installed`.
 
-A failure in one does not stop the others — record `FAILED` and continue.
+Most runtime installers are idempotent and safe to re-run. A failure in one does not stop the others — record `FAILED` and continue.
 
 ### Step 3 — LSP plugins
 
@@ -70,8 +71,8 @@ claude plugin list
 
 For each entry in the `lsp_plugins` section of `bootstrap.yaml`:
 
-- If already installed → record `already installed`.
-- If missing → run:
+- If already installed and `force` not passed → record `already installed`.
+- If missing, or if `force` was passed → run:
   ```bash
   claude plugin install <name>@<source> --scope user
   ```
@@ -87,11 +88,13 @@ Read `plugins/ai-stack/reference/plugins.yaml`. Compare against `claude plugin l
 Skip any plugin already processed in Step 3 — they will already be installed, and omitting
 them from this section avoids duplicate rows in the summary.
 
-For each remaining plugin not already installed:
+For each remaining plugin:
 
-```bash
-claude plugin install <name>@<source> --scope user
-```
+- If already installed and `force` not passed → record `already installed`.
+- If missing, or if `force` was passed → run:
+  ```bash
+  claude plugin install <name>@<source> --scope user
+  ```
 
 Record `already installed` / `installed` / `FAILED` for each.
 
@@ -112,9 +115,9 @@ Check if already installed:
 ls <install_path> 2>/dev/null && echo "installed" || echo "missing"
 ```
 
-If already present → record `already installed`.
+If already present and `force` not passed → record `already installed`.
 
-If missing, install via sparse git checkout:
+If missing, or if `force` was passed → install via sparse git checkout (remove existing directory first if force):
 
 ```bash
 tmpdir=$(mktemp -d)
@@ -141,7 +144,11 @@ claude mcp list
 
 Read `plugins/ai-stack/reference/mcps.yaml`. For each MCP:
 
-- If already registered (match by name) → record `already registered`.
+- If already registered (match by name) and `force` not passed → record `already registered`.
+- If already registered and `force` was passed → remove first, then re-register:
+  ```bash
+  claude mcp remove <name>
+  ```
 - If `scope` is not set, default to `user`.
 - If any field value contains `$VAR` references, expand from the current shell environment.
   If a required env var is unset, record `skipped (<VAR> not set)` and skip — do not register with an empty value.

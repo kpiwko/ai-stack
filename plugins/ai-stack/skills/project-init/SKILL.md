@@ -7,10 +7,11 @@ description: Initialise the current directory as an ai-stack project. Copies CLA
 ## Synopsis
 
 ```
-/ai-stack:project-init   ← initialise the current directory as an ai-stack project
+/ai-stack:project-init          ← initialise the current directory as an ai-stack project
+/ai-stack:project-init force    ← overwrite existing CLAUDE.md and AGENTS.md from the template
 ```
 
-Idempotent — skips files that already exist. Run from the root of the project you want to initialise.
+Idempotent by default — skips files that already exist. Pass `force` to overwrite them. Run from the root of the project you want to initialise.
 
 ---
 
@@ -36,7 +37,15 @@ Check if `CLAUDE.md` exists in CWD:
 ls CLAUDE.md 2>/dev/null && echo "exists" || echo "missing"
 ```
 
-If **exists** → record `CLAUDE.md: already present — skipped`.
+If **exists** and `force` was **not** passed → record `CLAUDE.md: already present — skipped`.
+
+If **exists** and `force` **was** passed → overwrite:
+
+```bash
+cp "<plugin-base>/reference/CLAUDE.md" CLAUDE.md
+```
+
+Record `CLAUDE.md: overwritten`.
 
 If **missing** → copy from the plugin reference:
 
@@ -54,7 +63,15 @@ Check if `AGENTS.md` exists in CWD:
 ls AGENTS.md 2>/dev/null && echo "exists" || echo "missing"
 ```
 
-If **exists** → record `AGENTS.md: already present — skipped`.
+If **exists** and `force` was **not** passed → record `AGENTS.md: already present — skipped`.
+
+If **exists** and `force` **was** passed → overwrite:
+
+```bash
+cp "<plugin-base>/reference/AGENTS.md" AGENTS.md
+```
+
+Record `AGENTS.md: overwritten`.
 
 If **missing** → copy from the plugin reference:
 

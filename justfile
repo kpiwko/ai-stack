@@ -6,7 +6,7 @@ default:
 # Build OpenShell binaries + sideload image, restart the gateway, and register the vertex-claude provider.
 # Pass force=true to rebuild even when binaries/image already exist.
 # Requires env: OPENSHELL_DIR, ANTHROPIC_VERTEX_PROJECT_ID, CLAUDE_CODE_USE_VERTEX, CLOUD_ML_REGION
-openshell-bootstrap rebuild='':
+openshell-bootstrap force='':
     #!/bin/bash
     set -euo pipefail
     [[ -f .env ]] && { set -a; source .env; set +a; }
@@ -35,17 +35,17 @@ openshell-bootstrap rebuild='':
 
     cd "$OPENSHELL_DIR"
 
-    if [[ -n "{{rebuild}}" ]] || [[ ! -f ~/.local/bin/openshell-gateway ]]; then
+    if [[ -n "{{force}}" ]] || [[ ! -f ~/.local/bin/openshell-gateway ]]; then
         ulimit -n 10240
         echo "==> Building openshell gateway..."
         cargo build -p openshell-server --bin openshell-gateway --release
         echo "==> Installing openshell gateway..."
         cargo install --locked --path crates/openshell-server --bin openshell-gateway --root ~/.local
     else
-        echo "==> Gateway binary exists — skipping build (just openshell-bootstrap rebuild to force)"
+        echo "==> Gateway binary exists — skipping build (just openshell-bootstrap force=true to force)"
     fi
 
-    if [[ -n "{{rebuild}}" ]] || ! podman image exists "$SUPERVISOR_IMAGE" 2>/dev/null; then
+    if [[ -n "{{force}}" ]] || ! podman image exists "$SUPERVISOR_IMAGE" 2>/dev/null; then
         echo "==> Building supervisor sideload image ($SUPERVISOR_IMAGE)..."
         ulimit -n 10240
         PATH="$(brew --prefix)/bin:$PATH" mise run build:docker:supervisor-sideload
@@ -54,7 +54,7 @@ openshell-bootstrap rebuild='':
             podman tag openshell/supervisor:dev "$SUPERVISOR_IMAGE"
         fi
     else
-        echo "==> Sideload image $SUPERVISOR_IMAGE exists — skipping (just openshell-bootstrap rebuild to force)"
+        echo "==> Sideload image $SUPERVISOR_IMAGE exists — skipping (just openshell-bootstrap force=true to force)"
     fi
 
     echo "==> Stopping any running gateway..."
@@ -100,7 +100,8 @@ openshell-teardown:
 
 # Install or update the LINCE toolkit (agent-sandbox + lince-dashboard).
 # Runs the interactive TUI quickstart installer from the lince/ submodule.
-lince-bootstrap:
+# Pass force=true to force reinstall (reserved — forwarded to quickstart.sh when supported).
+lince-bootstrap force='':
     cd lince && bash quickstart.sh
 
 # Launch the LINCE dashboard (Zellij + lince-dashboard plugin).
