@@ -98,6 +98,15 @@ openshell-teardown:
     rm -rf /tmp/cs
     echo "==> Done."
 
+# Install or update the LINCE toolkit (agent-sandbox + lince-dashboard).
+# Runs the interactive TUI quickstart installer from the lince/ submodule.
+lince-bootstrap:
+    cd lince && bash quickstart.sh
+
+# Launch the LINCE dashboard (Zellij + lince-dashboard plugin).
+lince:
+    zd
+
 # Launch Claude Code in an OpenShell sandbox with Vertex AI credentials.
 # Generates claude-vertex-wrapper dynamically from current env vars — no credentials stored in repo.
 # Requires env: OPENSHELL_DIR, ANTHROPIC_VERTEX_PROJECT_ID, CLAUDE_CODE_USE_VERTEX,
