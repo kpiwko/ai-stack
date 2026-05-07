@@ -108,6 +108,24 @@ lince-bootstrap force='':
 lince:
     zd
 
+# Run ai-stack skill evals with promptfoo.
+# skill: up|down|bootstrap|project-init|all (default: all)
+# pattern: substring filter on test description (default: run all)
+# repeat: run each test N times for pass@k (default: 1)
+eval skill='all' pattern='' repeat='1':
+    #!/bin/bash
+    set -euo pipefail
+    skills=( up down bootstrap project-init )
+    [[ "{{skill}}" != "all" ]] && skills=( "{{skill}}" )
+    for s in "${skills[@]}"; do
+        cfg="plugins/ai-stack/evals/promptfooconfig-${s}.yaml"
+        [[ -f "$cfg" ]] || { echo "No eval config for skill: $s"; continue; }
+        args=( --config "$cfg" --no-cache )
+        [[ -n "{{pattern}}" ]] && args+=( --filter-pattern "{{pattern}}" )
+        [[ "{{repeat}}" != "1" ]] && args+=( --repeat "{{repeat}}" )
+        npx --yes promptfoo eval "${args[@]}"
+    done
+
 # Launch Claude Code in an OpenShell sandbox with Vertex AI credentials.
 # Generates claude-vertex-wrapper dynamically from current env vars — no credentials stored in repo.
 # Requires env: OPENSHELL_DIR, ANTHROPIC_VERTEX_PROJECT_ID, CLAUDE_CODE_USE_VERTEX,
