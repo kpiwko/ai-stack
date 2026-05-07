@@ -11,25 +11,6 @@ Personal AI tooling stack: Podman Compose services for MCP servers, plus Claude 
 | notebooklm-mcp | 17200 | NotebookLM MCP server |
 | workspace-mcp | 17150 | Google Workspace MCP (Gmail, Drive, Calendar, Docs, Sheets) |
 
-## Quick start
-
-**1. Copy and fill in secrets**
-
-```bash
-cp env.example .env
-# Edit .env
-```
-
-**2. Start services**
-
-```bash
-just up
-# or selectively:
-podman compose up -d workspace-mcp notebooklm-mcp
-```
-
-Container images are built by CI and published to `ghcr.io/kpiwko/` — no local build needed.
-
 ## Getting started with Claude Code
 
 **1. Register the marketplace and install the ai-stack plugin:**
@@ -39,20 +20,20 @@ claude plugin marketplace add https://github.com/kpiwko/ai-stack.git --scope use
 claude plugin install ai-stack@ai-stack
 ```
 
-**2. Run bootstrap inside a Claude session to set up everything:**
+**2. Copy and fill in secrets, then run bootstrap inside a Claude session:**
+
+```bash
+cp env.example .env
+# Edit .env — fill in GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, etc.
+```
 
 ```
 /ai-stack:bootstrap
 ```
 
-This installs runtimes (uv, pnpm, rustup), LSP plugins (gopls, pyright, typescript-lsp, rust-analyzer),
-Claude plugins (superpowers, context7, atlassian, dev, track, quarterly), and registers MCP servers.
-
-**3. Install or update the LINCE toolkit:**
-
-```
-/ai-stack:sandbox
-```
+Bootstrap starts the compose stack, installs runtimes (uv, pnpm, rustup), LSP plugins
+(gopls, pyright, typescript-lsp, rust-analyzer), Claude plugins (superpowers, context7,
+atlassian, dev, track, quarterly), and registers MCP servers with Claude Code.
 
 **Updating plugins:**
 
@@ -120,20 +101,37 @@ On first run, make any Google Workspace tool call — the server returns a click
 URL. Complete the Google OAuth flow in your browser. Credentials are stored in
 `~/.config/workspace-mcp/` and reused on subsequent runs.
 
-## OpenShell sandboxes
+## Agent sandboxes (experimental)
 
-> **Note:** Running Claude Code in an OpenShell sandbox with Vertex AI currently requires
-> a manual credential wrapper (`just sandbox`). This is a workaround until OpenShell adds
-> native Vertex AI support (tracked in NVIDIA/OpenShell issue #472). Once that lands, the
-> workflow simplifies to `openshell sandbox create -- claude` with a configured provider.
+Running AI coding agents in isolated sandboxes is an active area. Two separate experimental
+approaches are available here; neither is production-ready. See also
+[OpenKaiden](https://openkaiden.ai/) — a desktop application that runs AI coding agents in
+isolated sandboxes with enterprise governance controls.
 
-`openshell/policy.yaml` grants sandbox network access to all MCP services in this stack.
-Local services are reached via `host.containers.internal` (injected by the Podman driver).
-Private IP ranges are explicitly allowlisted to override the built-in SSRF guard.
+### LINCE (Zellij dashboard + bwrap/nono sandbox)
 
-See `openshell/bootstrap.md` for full setup instructions and known issues.
+> **Experimental.** LINCE is a standalone toolkit and is not yet integrated with OpenShell.
+> It uses `bubblewrap` (Linux) or `nono` (macOS) for filesystem/process isolation and
+> Zellij for multi-agent session management.
 
-### Quick workflow
+Install or update via the plugin skill:
+
+```
+/ai-stack:sandbox
+```
+
+This installs `agent-sandbox`, the `lince-dashboard` Zellij plugin, and supporting scripts
+from the local `lince/` checkout.
+
+### OpenShell (Podman + network policy enforcement)
+
+> **Experimental.** Running Claude Code in an OpenShell sandbox with Vertex AI currently
+> requires a manual credential wrapper. This is a workaround until OpenShell adds native
+> Vertex AI support (tracked in NVIDIA/OpenShell issue #472). Once that lands, the workflow
+> simplifies to `openshell sandbox create -- claude` with a configured provider.
+
+Set up via `just` goals (not the plugin — OpenShell setup requires build tools and a running
+gateway, which the plugin cannot manage):
 
 ```bash
 # One-time setup (or after OpenShell git pull):
@@ -146,7 +144,11 @@ just sandbox
 just sandbox-teardown
 ```
 
-Gateway logs go to `/tmp/openshell-gateway.log`.
+`openshell/policy.yaml` grants sandbox network access to all MCP services in this stack.
+Local services are reached via `host.containers.internal` (injected by the Podman driver).
+
+Gateway logs go to `/tmp/openshell-gateway.log`. See `openshell/bootstrap.md` for full
+setup instructions and known issues.
 
 ## macOS notes
 
