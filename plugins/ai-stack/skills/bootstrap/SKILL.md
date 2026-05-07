@@ -180,8 +180,8 @@ context7                    already installed
 superpowers                 already installed
 
 Skills:
-template-slide-deck         skipped (optional)
-n8n-skills                  skipped (optional)
+template-slide-deck         skipped (install via /ai-stack:project-init)
+n8n-skills                  skipped (install via /ai-stack:project-init)
 
 MCPs:
 gmail                       already registered
@@ -193,29 +193,3 @@ devlake-local-mysql-mcp     skipped (DEVLAKE_MCP_SECRET_KEY not set)
 ```
 
 If any item shows `FAILED`, print its error output beneath the table.
-
-### Step 8 — Optional skills offer
-
-If no skills were skipped as optional, skip this step entirely.
-
-Otherwise print:
-
-```
-Optional skills are available but not installed by default:
-  <name>   <source>[@<version>]
-  ...
-
-Install any? Enter name(s) separated by spaces, or press Enter to skip:
-```
-
-Wait for input. If the user enters one or more names:
-
-- Validate each name against the optional skills list; ignore unrecognised names with a warning.
-- For each valid name, run the full Step 5 install logic (determine scope, check if already
-  installed, sparse-checkout and copy).
-- Print a short confirmation for each:
-  ```
-  template-slide-deck   installed
-  ```
-
-If the user presses Enter with no input, print `No optional skills installed.` and finish.
