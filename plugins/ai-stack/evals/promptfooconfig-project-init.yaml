@@ -1,0 +1,61 @@
+description: /ai-stack:project-init skill evals
+
+providers:
+  - id: exec
+    config:
+      command: bash tools/run-skill.sh project-init {{scenario}}
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: |
+        try { JSON.parse(output); return true; }
+        catch(e) { return { pass: false, reason: 'runner did not emit valid JSON' }; }
+
+tests:
+  - description: "Empty directory: CLAUDE.md and AGENTS.md created"
+    vars:
+      scenario: empty
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!r.state.claude_md_exists)  return { pass: false, reason: 'CLAUDE.md not created' };
+          if (!r.state.agents_md_exists)  return { pass: false, reason: 'AGENTS.md not created' };
+          if (!r.output.includes('created')) return { pass: false, reason: 'no "created" status in summary' };
+          return { pass: true };
+
+  - description: "CLAUDE.md exists without force: skipped, not overwritten"
+    vars:
+      scenario: existing-md
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.state.claude_md_content !== 'existing content')
+            return { pass: false, reason: 'CLAUDE.md was overwritten despite no force flag' };
+          if (!r.output.includes('skipped')) return { pass: false, reason: 'no "skipped" status in summary' };
+          return { pass: true };
+
+  - description: "force: existing CLAUDE.md overwritten with template content"
+    vars:
+      scenario: force
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.state.claude_md_content === 'old content')
+            return { pass: false, reason: 'CLAUDE.md not overwritten despite force' };
+          if (!r.state.claude_md_exists) return { pass: false, reason: 'CLAUDE.md missing after force' };
+          if (!r.output.includes('overwritten')) return { pass: false, reason: 'no "overwritten" status in summary' };
+          return { pass: true };
+
+  - description: "Empty directory: optional skills section shown in output"
+    vars:
+      scenario: empty
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!r.output.includes('Optional skills')) return { pass: false, reason: 'optional skills prompt not shown' };
+          return { pass: true };
