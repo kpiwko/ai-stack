@@ -1,3 +1,7 @@
+---
+description: Stop the ai-stack container stack. Runs podman compose down in CWD. Idempotent.
+---
+
 # /ai-stack:down
 
 ## Synopsis
@@ -7,16 +11,6 @@
 ```
 
 Idempotent — safe to run even if services are already stopped.
-
----
-
-## Reference files
-
-| What | File |
-|---|---|
-| Stack definition | `<plugin-base>/reference/compose.yaml` |
-
-Read the reference file before starting.
 
 ---
 
