@@ -51,7 +51,7 @@ just lince-bootstrap             # install or update LINCE toolkit (agent-sandbo
 just lince                       # launch the LINCE dashboard
 
 just openshell-bootstrap         # build OpenShell gateway + sideload image, start gateway, register provider
-just openshell-bootstrap force=true # force rebuild even if binaries/image already exist
+just openshell-bootstrap force       # force rebuild even if binaries/image already exist
 just openshell                   # generate Vertex AI wrapper and launch Claude Code in a sandbox
 just openshell-teardown          # delete sandboxes, stop gateway, clean up staging files
 ```

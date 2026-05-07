@@ -4,7 +4,7 @@ default:
     @just --list
 
 # Build OpenShell binaries + sideload image, restart the gateway, and register the vertex-claude provider.
-# Pass force=true to rebuild even when binaries/image already exist.
+# Pass force to rebuild even when binaries/image already exist.
 # Requires env: OPENSHELL_DIR, ANTHROPIC_VERTEX_PROJECT_ID, CLAUDE_CODE_USE_VERTEX, CLOUD_ML_REGION
 openshell-bootstrap force='':
     #!/bin/bash
@@ -42,7 +42,7 @@ openshell-bootstrap force='':
         echo "==> Installing openshell gateway..."
         cargo install --locked --path crates/openshell-server --bin openshell-gateway --root ~/.local
     else
-        echo "==> Gateway binary exists — skipping build (just openshell-bootstrap force=true to force)"
+        echo "==> Gateway binary exists — skipping build (just openshell-bootstrap force to rebuild)"
     fi
 
     if [[ -n "{{force}}" ]] || ! podman image exists "$SUPERVISOR_IMAGE" 2>/dev/null; then
@@ -54,7 +54,7 @@ openshell-bootstrap force='':
             podman tag openshell/supervisor:dev "$SUPERVISOR_IMAGE"
         fi
     else
-        echo "==> Sideload image $SUPERVISOR_IMAGE exists — skipping (just openshell-bootstrap force=true to force)"
+        echo "==> Sideload image $SUPERVISOR_IMAGE exists — skipping (just openshell-bootstrap force to rebuild)"
     fi
 
     echo "==> Stopping any running gateway..."
@@ -100,7 +100,7 @@ openshell-teardown:
 
 # Install or update the LINCE toolkit (agent-sandbox + lince-dashboard).
 # Runs the interactive TUI quickstart installer from the lince/ submodule.
-# Pass force=true to force reinstall (reserved — forwarded to quickstart.sh when supported).
+# Pass force to force reinstall (reserved — forwarded to quickstart.sh when supported).
 lince-bootstrap force='':
     cd lince && bash quickstart.sh
 

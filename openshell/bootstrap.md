@@ -140,7 +140,7 @@ All env vars are read from `.env` (loaded automatically by `just`). Copy
 | Goal | What it does |
 |---|---|
 | `just openshell-bootstrap` | Check prereqs, build binaries + sideload image, restart gateway, register provider |
-| `just openshell-bootstrap force=true` | Same but forces rebuild of binaries and sideload image |
+| `just openshell-bootstrap force` | Same but forces rebuild of binaries and sideload image |
 | `just openshell` | Generate wrapper from env vars, stage credentials, launch sandbox |
 | `just openshell-teardown` | Kill the gateway and clean up `/tmp/cs/` |
 
@@ -156,7 +156,7 @@ CLOUD_ML_REGION=global
 
 `openshell-bootstrap` checks that `bash sccache mise gh z3 cargo` are all in
 `PATH` and that Podman is running before attempting any build. It skips the
-binary build and sideload image build when they already exist; pass `force=true`
+binary build and sideload image build when they already exist; pass `force`
 to rebuild unconditionally.
 
 ### Manual steps (reference)
