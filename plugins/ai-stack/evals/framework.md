@@ -8,8 +8,8 @@ Each skill has a `promptfooconfig-<skill>.yaml` that declares test scenarios.
 A shared runner script (`tools/run-skill.sh`) handles:
 
 1. Create a temp directory (`$EVAL_DIR`)
-2. Run scenario-specific setup (seed files)
-3. Invoke `claude -p "/ai-stack:<skill>"` from `$EVAL_DIR`
+2. Run scenario-specific setup (seed files declared in the YAML `setup` field or by `run-skill.sh`'s built-in case block)
+3. Invoke `claude -p "/ai-stack:<skill> <prompt>"` from `$EVAL_DIR` (the skill invocation is the entire prompt text passed to Claude Code's non-interactive mode)
 4. Collect filesystem state
 5. Emit a JSON object to stdout: `{"output": "<claude text>", "state": {...}}`
 
@@ -50,14 +50,19 @@ const r = JSON.parse(output);
 
 Return `{ pass: true }` or `{ pass: false, reason: "..." }`.
 
+Graders are written as inline JavaScript in the `assert` block of each promptfoo YAML config. They do not live in separate files.
+
 ## State fields collected by `tools/run-skill.sh`
 
 | Field | Type | Description |
 |---|---|---|
 | `compose_exists` | bool | `compose.yaml` present in EVAL_DIR |
 | `env_exists` | bool | `.env` present in EVAL_DIR |
+| `env_content` | string | Content of `.env` (empty if absent; secrets redacted) |
 | `compose_content` | string | Content of `compose.yaml` (empty if absent) |
 | `claude_md_exists` | bool | `CLAUDE.md` present in EVAL_DIR |
 | `claude_md_content` | string | Content of `CLAUDE.md` |
 | `agents_md_exists` | bool | `AGENTS.md` present in EVAL_DIR |
 | `skill_dir_exists` | bool | `.claude/skills/` present in EVAL_DIR |
+
+> Note: the table above shows the fields currently emitted by `run-skill.sh`. Fields are additive — each skill's scenarios may emit additional fields. See the relevant `promptfooconfig-<skill>.yaml` for the full field list.
