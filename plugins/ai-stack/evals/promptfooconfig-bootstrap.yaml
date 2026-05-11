@@ -8,7 +8,7 @@ prompts:
   - '{{scenario}}'
 
 providers:
-  - 'exec: bash ../../../tools/run-skill.sh bootstrap'
+  - 'exec: python3 ../../../tools/run-skill.py bootstrap'
 
 defaultTest:
   assert:

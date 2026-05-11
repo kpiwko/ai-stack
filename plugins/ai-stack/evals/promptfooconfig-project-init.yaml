@@ -4,7 +4,7 @@ prompts:
   - '{{scenario}}'
 
 providers:
-  - 'exec: bash ../../../tools/run-skill.sh project-init'
+  - 'exec: python3 ../../../tools/run-skill.py project-init'
 
 defaultTest:
   assert:

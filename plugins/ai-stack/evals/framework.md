@@ -5,7 +5,7 @@ Evals use [promptfoo](https://promptfoo.dev) as the test runner.
 ## How it works
 
 Each skill has a `promptfooconfig-<skill>.yaml` that declares test scenarios.
-A shared runner script (`tools/run-skill.sh`) handles:
+A shared runner script (`tools/run-skill.py`) handles:
 
 1. Create a temp directory (`$EVAL_DIR`)
 2. Run scenario-specific setup (seed files declared in the YAML `setup` field or by `run-skill.sh`'s built-in case block)
