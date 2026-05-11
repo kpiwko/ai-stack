@@ -4,7 +4,7 @@ prompts:
   - '{{scenario}}'
 
 providers:
-  - 'exec: bash tools/run-skill.sh project-init'
+  - 'exec: bash ../../../tools/run-skill.sh project-init'
 
 defaultTest:
   assert:

@@ -4,6 +4,10 @@
 #   {"output": "<claude text>", "state": {<filesystem state>}}
 set -euo pipefail
 
+# Always run from repo root regardless of where promptfoo invokes the script
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
 SKILL="${1:?skill required (up|down|bootstrap|project-init)}"
 SCENARIO="${2:-default}"
 EVAL_DIR=$(mktemp -d)

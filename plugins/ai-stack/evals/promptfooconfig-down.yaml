@@ -4,7 +4,7 @@ prompts:
   - '{{scenario}}'
 
 providers:
-  - 'exec: bash tools/run-skill.sh down'
+  - 'exec: bash ../../../tools/run-skill.sh down'
 
 defaultTest:
   assert:

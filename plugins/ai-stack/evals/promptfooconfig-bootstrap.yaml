@@ -8,7 +8,7 @@ prompts:
   - '{{scenario}}'
 
 providers:
-  - 'exec: bash tools/run-skill.sh bootstrap'
+  - 'exec: bash ../../../tools/run-skill.sh bootstrap'
 
 defaultTest:
   assert:
