@@ -9,7 +9,7 @@ A shared runner script (`tools/run-skill.sh`) handles:
 
 1. Create a temp directory (`$EVAL_DIR`)
 2. Run scenario-specific setup (seed files declared in the YAML `setup` field or by `run-skill.sh`'s built-in case block)
-3. Invoke `claude -p "/ai-stack:<skill> <args>"` from `$EVAL_DIR`; the scenario name is read from stdin (passed by promptfoo as the rendered prompt)
+3. Invoke `claude -p "/ai-stack:<skill> <args>"` from `$EVAL_DIR`
 4. Collect filesystem state
 5. Emit a JSON object to stdout: `{"output": "<claude text>", "state": {...}}`
 
