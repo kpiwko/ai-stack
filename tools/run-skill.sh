@@ -45,7 +45,11 @@ WORK_DIR="$EVAL_DIR"
 [[ "$SKILL" == "bootstrap" ]] && WORK_DIR="$(pwd)"
 
 # ── Invoke claude ─────────────────────────────────────────────────────────────
-CLAUDE_OUT=$(cd "$WORK_DIR" && claude -p "/ai-stack:${SKILL}${ARGS}" 2>&1) || true
+CLAUDE_OUT=$(cd "$WORK_DIR" && claude -p "/ai-stack:${SKILL}${ARGS}" \
+  --dangerously-skip-permissions \
+  --add-dir "$HOME/.claude" \
+  --add-dir "$REPO_ROOT" \
+  2>&1) || true
 
 # ── Collect state ─────────────────────────────────────────────────────────────
 compose_exists=$([ -f "$EVAL_DIR/compose.yaml" ]        && echo true || echo false)
