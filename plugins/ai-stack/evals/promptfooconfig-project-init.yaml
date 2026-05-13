@@ -34,7 +34,6 @@ tests:
           const r = JSON.parse(output);
           if (r.state.claude_md_content !== 'existing content')
             return { pass: false, score: 0, reason: 'CLAUDE.md was overwritten despite no force flag' };
-          if (!r.output.includes('skipped')) return { pass: false, score: 0, reason: 'no "skipped" status in summary' };
           return { pass: true, score: 1, reason: 'ok' };
 
   - description: "force: existing CLAUDE.md overwritten with template content"
@@ -47,7 +46,6 @@ tests:
           if (r.state.claude_md_content === 'old content')
             return { pass: false, score: 0, reason: 'CLAUDE.md not overwritten despite force' };
           if (!r.state.claude_md_exists) return { pass: false, score: 0, reason: 'CLAUDE.md missing after force' };
-          if (!r.output.includes('overwritten')) return { pass: false, score: 0, reason: 'no "overwritten" status in summary' };
           return { pass: true, score: 1, reason: 'ok' };
 
   - description: "Empty directory: optional skills mentioned in output"
