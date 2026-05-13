@@ -6,13 +6,22 @@
 # lsp_plugins: sequence of <name>@<source> — installed as Claude plugins
 # plugins/skills/mcps: paths to registry files processed by bootstrap steps 4-6
 
+# Polyglot version manager — installed first in Step 2, then used to pin global language versions.
+# global_runtimes: run after mise is installed (or confirmed present).
+version_manager:
+  name: mise
+  check: "command -v mise"
+  required: false
+  install: "brew install mise"
+  global_runtimes: "mise use --global python@3.12 node@20 go@1.24"
+
 languages:
   go:
     runtime:
       name: go
       check: go version
       required: true
-      reason: "Install from https://go.dev/dl/"
+      reason: "Install via mise (run /ai-stack:bootstrap) or from https://go.dev/dl/"
 
   python:
     runtime:
@@ -26,7 +35,7 @@ languages:
       name: node
       check: node --version
       required: true
-      reason: "Install from https://nodejs.org/ or via brew"
+      reason: "Install via mise (run /ai-stack:bootstrap) or from https://nodejs.org/"
     package_manager:
       name: pnpm
       check: pnpm --version

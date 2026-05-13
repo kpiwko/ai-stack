@@ -34,26 +34,50 @@ Read all files before starting any step.
 
 ### Step 1 — Prerequisites check
 
-Run:
+First check if `mise` is installed:
+
+```bash
+command -v mise && mise --version || echo "mise: MISSING"
+```
+
+Then check go and node:
 
 ```bash
 command -v go   && go version   || echo "go: MISSING"
 command -v node && node --version || echo "node: MISSING"
 ```
 
-If either is missing, stop immediately and display:
+If `mise` is installed but go or node are missing → **do not abort**. Record the missing tools
+as `will be installed via mise` and continue to Step 2 (mise will install them).
+
+If `mise` is **not** installed and go or node are missing → stop immediately and display:
 
 ```
 ✗ <tool>: not found
-  This skill cannot install <tool>.
+  This skill cannot install <tool> directly.
   Install it from: <reason from bootstrap.yaml>
+  Or install mise first (brew install mise) and re-run /ai-stack:bootstrap.
 ```
 
 Do not proceed to Step 2.
 
 ### Step 2 — Runtimes / package managers
 
-For each managed tool (`uv`, `pnpm`, `rustup`) from `bootstrap.yaml`, in order:
+**First, handle mise** from the `version_manager` section of `bootstrap.yaml`:
+
+1. Run its `check` command (`command -v mise`).
+2. If already present and `force` not passed → record `already installed`, then run:
+   ```bash
+   mise use --global python@3.12 node@20 go@1.24
+   ```
+   Record the global_runtimes command as run.
+3. If missing, or if `force` was passed → run its `install` command (`brew install mise`), record `installed`, then run:
+   ```bash
+   mise use --global python@3.12 node@20 go@1.24
+   ```
+   Record the global_runtimes command as run.
+
+**Then, for each remaining managed tool** (`uv`, `pnpm`, `rustup`) from `bootstrap.yaml`, in order:
 
 1. Run its `check` command.
 2. If already present and `force` not passed → record `already installed`.
@@ -171,6 +195,7 @@ go                          ok
 node                        ok
 
 Runtimes:
+mise                        already installed (python@3.12 node@20 go@1.24 set globally)
 uv                          installed
 pnpm                        already installed
 rustup                      already installed

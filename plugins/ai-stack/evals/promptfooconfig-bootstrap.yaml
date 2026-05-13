@@ -29,6 +29,16 @@ tests:
           if (/go.*MISSING|node.*MISSING/.test(r.output)) return { pass: false, score: 0, reason: 'prerequisite check failed' };
           return { pass: true, score: 1, reason: 'ok' };
 
+  - description: "mise runtime: appears in runtimes section of summary"
+    vars:
+      scenario: default
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/mise/i.test(r.output)) return { pass: false, score: 0, reason: 'mise not mentioned in bootstrap output' };
+          return { pass: true, score: 1, reason: 'ok' };
+
   - description: "Already-installed runtimes: marked 'already installed' in summary"
     vars:
       scenario: default
