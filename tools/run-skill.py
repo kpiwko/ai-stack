@@ -9,7 +9,47 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
+
+CLAUDE_TIMEOUT = 300  # seconds
+
+
+def run_claude(claude_cmd: list[str], work_dir: Path, retries: int = 2, retry_delay: int = 5) -> str:
+    """Run claude, return combined stdout+stderr output.
+
+    Retries only on the known transient condition: returncode 0 with no output,
+    which happens when a prior Claude process hasn't released its session socket yet.
+    Non-zero exit and timeout raise immediately without retrying.
+    """
+    for attempt in range(retries + 1):
+        proc = subprocess.Popen(
+            claude_cmd,
+            cwd=work_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        try:
+            stdout, _ = proc.communicate(timeout=CLAUDE_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.communicate()
+            raise RuntimeError(f"Claude timed out after {CLAUDE_TIMEOUT}s")
+
+        output = stdout or ""
+
+        if proc.returncode != 0:
+            raise RuntimeError(f"Claude exited {proc.returncode}\n{output}")
+
+        if output.strip():
+            return output
+
+        # returncode 0, no output — known transient; retry after a brief pause
+        if attempt < retries:
+            time.sleep(retry_delay)
+
+    raise RuntimeError("Claude exited 0 but produced no output after retries")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -110,13 +150,10 @@ def main() -> None:
             "--add-dir", str(add_dir),
         ]
 
-        result = subprocess.run(
-            claude_cmd,
-            cwd=work_dir,
-            capture_output=True,
-            text=True,
-        )
-        claude_out = result.stdout + result.stderr
+        try:
+            claude_out = run_claude(claude_cmd, work_dir)
+        except RuntimeError as e:
+            claude_out = f"ERROR: {e}"
 
         state = collect_state(eval_dir)
 

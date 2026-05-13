@@ -3,6 +3,9 @@ description: /ai-stack:bootstrap skill evals
 # NOTE: bootstrap evals run against real machine state (they register MCPs,
 # install runtimes). These are integration tests, not unit tests. Run manually
 # on a clean dev machine or CI. Gate CI on up/down/project-init only.
+#
+# concurrency:1 is required — parallel runs collide on claude plugin list / mcp list.
+concurrency: 1
 
 prompts:
   - '{{scenario}}'
