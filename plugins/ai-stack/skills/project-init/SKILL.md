@@ -81,7 +81,7 @@ cp "<plugin-base>/reference/AGENTS.md" AGENTS.md
 
 Record `AGENTS.md: created`.
 
-### Step 3 — Optional skills
+### Step 3 — Check optional skills
 
 Read `<plugin-base>/reference/skills.yaml`. Collect all entries where `optional: true`.
 
@@ -91,26 +91,44 @@ For each optional skill, check if it is already installed in `.claude/skills/<na
 ls .claude/skills/<name> 2>/dev/null && echo "installed" || echo "missing"
 ```
 
-Print status table:
+Record each skill's status (`installed` or `missing`). Do not prompt or install anything yet.
+
+### Step 4 — Summary
+
+Print the full summary now — before any optional skills interaction:
 
 ```
-Optional skills available:
+=== project-init SUMMARY ===
+
+CLAUDE.md     created
+AGENTS.md     already present — skipped
+Skills:
   template-slide-deck   missing
   n8n-skills            already installed
+
+============================
+
+Next steps:
+  1. Edit CLAUDE.md and AGENTS.md to reflect this project's conventions.
+  2. Run /ai-stack:up to start the service stack.
 ```
 
-If all are already installed → print `All optional skills already installed.` and skip to Step 4.
+Use the statuses recorded in Steps 1–3 to fill in each row.
 
-Otherwise print:
+### Step 5 — Optional skills offer
 
-```
-Install any? Enter name(s) separated by spaces, or press Enter to skip:
-```
+If all optional skills are already installed → print `All optional skills already installed.` and stop.
 
-Wait for input. If the user enters one or more names:
+If any optional skills are missing, use the **AskUserQuestion tool** to offer them:
 
-- Validate each name against the optional skills list; warn and skip unrecognised names.
-- For each valid name, install via sparse git checkout into `.claude/skills/<name>`:
+- `question`: `"Which optional skills would you like to install?"`
+- `header`: `"Optional skills"`
+- `multiSelect`: `true`
+- `options`: one entry per **missing** optional skill, with `label` = skill name and `description` = source
+
+If the user selects nothing (or the tool is unavailable) → print `No optional skills installed.` and stop.
+
+For each selected skill, install via sparse git checkout into `.claude/skills/<name>`:
 
 ```bash
 tmpdir=$(mktemp -d)
@@ -123,30 +141,8 @@ mkdir -p .claude/skills/<name>
 cp -r "$tmpdir/<path>/." .claude/skills/<name>/
 ```
 
-If no `path` field, omit the `sparse-checkout set` step and copy from `$tmpdir` directly.
-
-Print confirmation for each:
+Print confirmation for each installed skill:
 
 ```
 template-slide-deck   installed → .claude/skills/template-slide-deck
-```
-
-If the user presses Enter with no input → print `No optional skills installed.`
-
-### Step 4 — Summary
-
-```
-=== project-init SUMMARY ===
-
-CLAUDE.md     created
-AGENTS.md     already present — skipped
-Skills:
-  template-slide-deck   installed → .claude/skills/template-slide-deck
-  n8n-skills            already installed
-
-============================
-
-Next steps:
-  1. Edit CLAUDE.md and AGENTS.md to reflect this project's conventions.
-  2. Run /ai-stack:up to start the service stack.
 ```
