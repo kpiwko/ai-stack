@@ -62,7 +62,7 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
     key = f"{skill}/{scenario}"
     env_src = REPO_ROOT / ".env"
     compose_src = REPO_ROOT / "compose.yaml"
-    env_example_src = REPO_ROOT / ".claude/skills/ai-stack/reference/env.example"
+    env_example_src = REPO_ROOT / "plugins" / "ai-stack" / "reference" / "env.example"
 
     if key == "up/fresh":
         shutil.copy(env_src, eval_dir / ".env")
@@ -117,6 +117,18 @@ def collect_state(eval_dir: Path) -> dict:
     }
 
 
+def build_skill_prompt(skill: str, args: str) -> str:
+    """Read SKILL.md from the repo and prepend the invocation context header.
+
+    Passing the skill content directly as the -p prompt means evals work from
+    local repo files without needing the plugin installed globally.
+    """
+    skill_dir = REPO_ROOT / "plugins" / "ai-stack" / "skills" / skill
+    skill_md = (skill_dir / "SKILL.md").read_text()
+    invocation = f"/ai-stack:{skill}{args}"
+    return f"Base directory for this skill: {skill_dir}\nInvoked as: {invocation}\n\n{skill_md}"
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         die("usage: run-skill.py <skill> [scenario]")
@@ -127,28 +139,33 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         eval_dir = Path(tmp)
 
-        # For non-bootstrap skills: copy .claude/skills into eval_dir so Claude
-        # discovers the repo's skill files without also seeing REPO_ROOT's other
-        # files (compose.yaml, .env, etc.) which would confuse existence checks.
-        if skill != "bootstrap":
-            shutil.copytree(
-                str(REPO_ROOT / ".claude" / "skills"),
-                str(eval_dir / ".claude" / "skills"),
-                symlinks=False,
-                dirs_exist_ok=True,
-            )
-
         setup_scenario(skill, scenario, eval_dir)
 
         args = " force" if scenario == "force" else ""
-        work_dir = REPO_ROOT if skill == "bootstrap" else eval_dir
-        add_dir = REPO_ROOT if skill == "bootstrap" else eval_dir
 
-        claude_cmd = [
-            "claude", "-p", f"/ai-stack:{skill}{args}",
-            "--dangerously-skip-permissions",
-            "--add-dir", str(add_dir),
-        ]
+        if skill == "bootstrap":
+            # Bootstrap runs against real machine state. Pass SKILL.md directly
+            # so evals work without the plugin installed globally.
+            prompt = build_skill_prompt(skill, args)
+            work_dir = REPO_ROOT
+            claude_cmd = [
+                "claude", "-p", prompt,
+                "--dangerously-skip-permissions",
+                "--add-dir", str(REPO_ROOT),
+            ]
+        else:
+            # Non-bootstrap: pass SKILL.md content directly so evals work from local
+            # repo files without the plugin being globally installed.
+            # --add-dir eval_dir: file isolation (compose.yaml, .env, etc.)
+            # --add-dir plugins/ai-stack: reference file access (../reference/ paths)
+            prompt = build_skill_prompt(skill, args)
+            work_dir = eval_dir
+            claude_cmd = [
+                "claude", "-p", prompt,
+                "--dangerously-skip-permissions",
+                "--add-dir", str(eval_dir),
+                "--add-dir", str(REPO_ROOT / "plugins" / "ai-stack"),
+            ]
 
         try:
             claude_out = run_claude(claude_cmd, work_dir)

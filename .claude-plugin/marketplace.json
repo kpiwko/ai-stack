@@ -10,9 +10,9 @@
   "plugins": [
     {
       "name": "ai-stack",
-      "source": "./.claude/skills/ai-stack",
+      "source": "./plugins/ai-stack",
       "description": "Maintenance commands for ai-stack repos: scaffold services, install plugins/skills/MCPs.",
-      "version": "0.3.0"
+      "version": "0.12.0"
     },
     {
       "name": "dev",
