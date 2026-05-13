@@ -23,11 +23,11 @@ argument-hint: "[plugin|skill|mcp] [add|update|remove]"
 | Type | File |
 |---|---|
 | plugin — built-in | inline table below |
-| plugin — external | `plugins/ai-stack/reference/plugins.yaml` |
-| skill | `plugins/ai-stack/reference/skills.yaml` |
-| mcp | `plugins/ai-stack/reference/mcps.yaml` |
+| plugin — external | `.claude/skills/ai-stack/reference/plugins.yaml` |
+| skill | `.claude/skills/ai-stack/reference/skills.yaml` |
+| mcp | `.claude/skills/ai-stack/reference/mcps.yaml` |
 
-Version is tracked in `plugins/ai-stack/.claude-plugin/plugin.json`.
+Version is tracked in `.claude-plugin/marketplace.json` (the `"version"` field of the `"ai-stack"` plugin entry).
 
 ---
 
@@ -103,13 +103,13 @@ Ask for the entry name.
 
 - **add**: check whether the entry already exists:
   - Built-in plugin: scan the inline table above by name.
-  - External plugin / skill / mcp: scan `plugins/ai-stack/reference/<type>s.yaml` by name.
+  - External plugin / skill / mcp: scan `.claude/skills/ai-stack/reference/<type>s.yaml` by name.
   - If found: show it and ask — update it or cancel?
     - If update: treat as `update` from here, with patch version bump.
     - If cancel: exit.
 - **update / remove**: find the entry by name:
   - Built-in plugin: scan the inline table above.
-  - External: scan `plugins/ai-stack/reference/<type>s.yaml`.
+  - External: scan `.claude/skills/ai-stack/reference/<type>s.yaml`.
   - If not found: show error and exit.
 
 ### Step 4: Preview
@@ -119,7 +119,7 @@ Show what will change and the version bump. Do not modify any file until the use
 **add / update:**
 ```
 === MODIFY PREVIEW ===
-File:    plugins/ai-stack/reference/<type>s.yaml
+File:    .claude/skills/ai-stack/reference/<type>s.yaml
 Action:  <add new entry | update existing entry>
 
   - name: <name>
@@ -128,7 +128,7 @@ Action:  <add new entry | update existing entry>
     url: <url>             # mcp only
     scope: <scope>         # mcp only
 
-Version: plugins/ai-stack/.claude-plugin/plugin.json
+Version: .claude-plugin/marketplace.json
   "version": "<current>" → "<bumped>"
 ======================
 Proceed? (yes / cancel)
@@ -140,13 +140,13 @@ Omit fields that do not apply to this entry type (e.g. `url`/`scope` for plugins
 **remove:**
 ```
 === MODIFY PREVIEW ===
-File:    plugins/ai-stack/reference/<type>s.yaml
+File:    .claude/skills/ai-stack/reference/<type>s.yaml
 Action:  remove entry
 
   - name: <name>
     ...
 
-Version: plugins/ai-stack/.claude-plugin/plugin.json
+Version: .claude-plugin/marketplace.json
   "version": "<current>" → "<bumped>"
 ======================
 Proceed? (yes / cancel)
@@ -163,7 +163,7 @@ On confirmation:
 3. **Built-in plugin remove**: delete the matching row from the built-in table in this file.
 4. **External plugin / skill / mcp add or update**: append or replace the entry in the target YAML file, preserving existing entries, comments, and formatting.
 5. **External plugin / skill / mcp remove**: delete the matching entry block from the YAML file.
-6. Read `plugin.json` and bump the version:
+6. Read `.claude-plugin/marketplace.json` and bump the version of the `"ai-stack"` plugin entry:
    - New entry added → increment minor, reset patch (e.g. `0.5.0` → `0.6.0`)
    - Entry updated or removed → increment patch only (e.g. `0.5.0` → `0.5.1`)
 
@@ -179,9 +179,9 @@ Ask: "Commit these changes? (yes / no)"
 
 If yes:
 ```bash
-# Stage the file modified in step 5 plus plugin.json:
-# Built-in plugin changes: plugins/ai-stack/skills/modify/SKILL.md
-# External changes: plugins/ai-stack/reference/<type>s.yaml
-git add <modified-file> plugins/ai-stack/.claude-plugin/plugin.json
+# Stage the file modified in step 5 plus marketplace.json:
+# Built-in plugin changes: .claude/skills/ai-stack/modify/SKILL.md
+# External changes: .claude/skills/ai-stack/reference/<type>s.yaml
+git add <modified-file> .claude-plugin/marketplace.json
 git commit -m "chore(ai-stack): <add|update|remove> <type> <name>"
 ```

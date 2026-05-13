@@ -1,1 +1,121 @@
-plugins/ai-stack/reference/compose.yaml
+# Podman Compose — ai-stack local AI tooling stack
+#
+# macOS notes:
+#   - Named volumes are managed by the podman VM and work reliably.
+#   - Bind mounts under /Users/* are shared via virtio-fs (no extra config needed).
+#   - network_mode: host is NOT supported on macOS; use bridge networking.
+#   - host.containers.internal resolves to the macOS host from inside containers.
+#
+# Usage:
+#   podman compose up -d           # start everything
+#   podman compose stop <name>     # stop one service
+#   podman compose up -d <name>    # start one service
+#
+# Services:
+#   devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (port 17301)
+#                             Requires DevLake MySQL running on host port 3306.
+#   devlake-prod-mysql-mcp  — MySQL MCP proxy for remote Konflux RDS (port 17300)
+#   notebooklm-mcp          — NotebookLM MCP server (port 17200)
+#   workspace-mcp           — Google Workspace MCP server, streamable HTTP transport (port 17150)
+
+name: ai-stack
+
+networks:
+  ai-stack:
+    driver: bridge
+
+services:
+
+  ##############################################################################
+  # devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (read-only)
+  # Image built by CI: ghcr.io/kpiwko/mcp-mysql:latest
+  # MCP endpoint: http://localhost:17301/mcp  (streamable HTTP transport)
+  #
+  # Connects to DevLake MySQL via host.containers.internal:3306.
+  ##############################################################################
+  devlake-local-mysql-mcp:
+    image: ghcr.io/kpiwko/mcp-mysql:latest
+    networks: [ai-stack]
+    ports:
+      - "17301:3000"
+    environment:
+      MYSQL_HOST: host.containers.internal
+      MYSQL_PORT: "3306"
+      MYSQL_USER: ${DEVLAKE_MYSQL_USER:-merico}
+      MYSQL_PASS: ${DEVLAKE_MYSQL_PASSWORD:-merico}
+      MYSQL_DB: lake
+      MYSQL_POOL_SIZE: "10"
+      MYSQL_QUERY_TIMEOUT: "30000"
+      MYSQL_CACHE_TTL: "60000"
+      ALLOW_INSERT_OPERATION: "false"
+      ALLOW_UPDATE_OPERATION: "false"
+      ALLOW_DELETE_OPERATION: "false"
+      IS_REMOTE_MCP: "true"
+      PORT: "3000"
+      REMOTE_SECRET_KEY: ${DEVLAKE_MCP_SECRET_KEY}
+    restart: unless-stopped
+
+  ##############################################################################
+  # devlake-prod-mysql-mcp — MySQL MCP proxy for remote Konflux RDS (read-only)
+  # Image built by CI: ghcr.io/kpiwko/mcp-mysql:latest
+  # MCP endpoint: http://localhost:17300/mcp  (streamable HTTP transport)
+  ##############################################################################
+  devlake-prod-mysql-mcp:
+    image: ghcr.io/kpiwko/mcp-mysql:latest
+    networks: [ai-stack]
+    ports:
+      - "17300:3000"
+    environment:
+      MYSQL_HOST: ${KONFLUX_MYSQL_HOST}
+      MYSQL_PORT: ${KONFLUX_MYSQL_PORT:-3306}
+      MYSQL_USER: ${KONFLUX_MYSQL_USER}
+      MYSQL_PASS: ${KONFLUX_MYSQL_PASS}
+      MYSQL_DB: ${KONFLUX_MYSQL_DB:-lake}
+      MYSQL_POOL_SIZE: "10"
+      MYSQL_QUERY_TIMEOUT: "30000"
+      MYSQL_CACHE_TTL: "60000"
+      ALLOW_INSERT_OPERATION: "false"
+      ALLOW_UPDATE_OPERATION: "false"
+      ALLOW_DELETE_OPERATION: "false"
+      IS_REMOTE_MCP: "true"
+      PORT: "3000"
+      REMOTE_SECRET_KEY: ${KONFLUX_MCP_SECRET_KEY}
+    restart: unless-stopped
+
+  ##############################################################################
+  # notebooklm-mcp — NotebookLM MCP server, streamable HTTP transport
+  # MCP endpoint: http://localhost:17200/mcp
+  # Auth (first run or cookie refresh):
+  #   1. open http://localhost:17201/vnc.html
+  #   2. podman exec -it ai-stack-notebooklm-mcp-1 nlm login
+  ##############################################################################
+  notebooklm-mcp:
+    image: ghcr.io/kpiwko/notebooklm-mcp:latest
+    networks: [ai-stack]
+    ports:
+      - "17200:17200"
+      - "17201:6080"
+    volumes:
+      - ${HOME}/.config/notebooklm-mcp-cli:/root/.config/notebooklm-mcp-cli
+    restart: unless-stopped
+
+  ##############################################################################
+  # workspace-mcp — Google Workspace MCP server, streamable HTTP transport
+  # Covers: Gmail, Drive, Calendar, Docs, Sheets, Slides, Forms, Apps Script
+  # MCP endpoint: http://localhost:17150/mcp
+  # Auth (first run): make any Google Workspace tool call — workspace-mcp returns
+  #   a clickable auth URL; complete the Google OAuth flow in your browser.
+  ##############################################################################
+  workspace-mcp:
+    image: ghcr.io/kpiwko/workspace-mcp:latest
+    networks: [ai-stack]
+    ports:
+      - "17150:8000"
+    volumes:
+      - ${HOME}/.config/workspace-mcp:/root/.config/workspace-mcp
+    environment:
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      GOOGLE_OAUTH_REDIRECT_URI: http://localhost:17150/oauth2callback
+      OAUTHLIB_INSECURE_TRANSPORT: "1"
+    restart: unless-stopped

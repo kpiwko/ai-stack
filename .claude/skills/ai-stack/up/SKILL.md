@@ -18,8 +18,8 @@ Idempotent — running again updates services without overwriting existing confi
 
 | What | File |
 |---|---|
-| Stack definition | `${CLAUDE_PLUGIN_ROOT}/reference/compose.yaml` |
-| Environment template | `${CLAUDE_PLUGIN_ROOT}/reference/env.example` |
+| Stack definition | `.claude/skills/ai-stack/reference/compose.yaml` |
+| Environment template | `.claude/skills/ai-stack/reference/env.example` |
 
 Read both files before starting any step.
 
@@ -50,17 +50,17 @@ If neither is found, stop and display:
 
 ### Step 2 — Handle compose.yaml
 
-Copy the reference compose.yaml only if not already present — never overwrite an
-existing file:
+Check if `compose.yaml` exists in the current directory:
 
 ```bash
-if [ ! -f compose.yaml ]; then
-  cp "${CLAUDE_PLUGIN_ROOT}/reference/compose.yaml" compose.yaml
-  echo "compose.yaml: created"
-else
-  echo "compose.yaml: found — skipping"
-fi
+ls compose.yaml 2>/dev/null && echo "exists" || echo "missing"
 ```
+
+If **missing** → use the Write tool to create `compose.yaml` in the current directory
+with the content of `.claude/skills/ai-stack/reference/compose.yaml` from the repo.
+Record `compose.yaml: created`.
+
+If **present** → record `compose.yaml: found — skipping`.
 
 Record the output line.
 
@@ -72,12 +72,8 @@ Check if `.env` exists in the current directory:
 ls .env 2>/dev/null && echo "exists" || echo "missing"
 ```
 
-If **missing** → copy the template:
-
-```bash
-cp "${CLAUDE_PLUGIN_ROOT}/reference/env.example" .env
-```
-
+If **missing** → use the Write tool to create `.env` in the current directory
+with the content of `.claude/skills/ai-stack/reference/env.example` from the repo.
 Record `.env: created from env.example`.
 
 In both cases — scan `.env` for lines that still contain a placeholder value

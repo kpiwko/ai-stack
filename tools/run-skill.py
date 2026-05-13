@@ -22,7 +22,7 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
     key = f"{skill}/{scenario}"
     env_src = REPO_ROOT / ".env"
     compose_src = REPO_ROOT / "compose.yaml"
-    env_example_src = REPO_ROOT / "plugins/ai-stack/reference/env.example"
+    env_example_src = REPO_ROOT / ".claude/skills/ai-stack/reference/env.example"
 
     if key == "up/fresh":
         shutil.copy(env_src, eval_dir / ".env")
@@ -86,18 +86,29 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory() as tmp:
         eval_dir = Path(tmp)
+
+        # For non-bootstrap skills: copy .claude/skills into eval_dir so Claude
+        # discovers the repo's skill files without also seeing REPO_ROOT's other
+        # files (compose.yaml, .env, etc.) which would confuse existence checks.
+        if skill != "bootstrap":
+            shutil.copytree(
+                str(REPO_ROOT / ".claude" / "skills"),
+                str(eval_dir / ".claude" / "skills"),
+                symlinks=False,
+                dirs_exist_ok=True,
+            )
+
         setup_scenario(skill, scenario, eval_dir)
 
         args = " force" if scenario == "force" else ""
         work_dir = REPO_ROOT if skill == "bootstrap" else eval_dir
+        add_dir = REPO_ROOT if skill == "bootstrap" else eval_dir
 
         claude_cmd = [
             "claude", "-p", f"/ai-stack:{skill}{args}",
             "--dangerously-skip-permissions",
-            "--add-dir", str(Path.home() / ".claude"),
+            "--add-dir", str(add_dir),
         ]
-        if skill == "bootstrap":
-            claude_cmd += ["--add-dir", str(REPO_ROOT)]
 
         result = subprocess.run(
             claude_cmd,

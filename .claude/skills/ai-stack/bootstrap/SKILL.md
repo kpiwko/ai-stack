@@ -20,11 +20,11 @@ check (Step 1) is fail-fast. Without `force`, already-installed items are skippe
 
 | What | File |
 |---|---|
-| Runtimes + package managers | `plugins/ai-stack/reference/bootstrap.yaml` |
-| LSP plugins | `plugins/ai-stack/reference/bootstrap.yaml` (`lsp_plugins` section) |
-| Claude plugins | `plugins/ai-stack/reference/plugins.yaml` |
-| External skills | `plugins/ai-stack/reference/skills.yaml` |
-| MCP servers | `plugins/ai-stack/reference/mcps.yaml` |
+| Runtimes + package managers | `.claude/skills/ai-stack/reference/bootstrap.yaml` |
+| LSP plugins | `.claude/skills/ai-stack/reference/bootstrap.yaml` (`lsp_plugins` section) |
+| Claude plugins | `.claude/skills/ai-stack/reference/plugins.yaml` |
+| External skills | `.claude/skills/ai-stack/reference/skills.yaml` |
+| MCP servers | `.claude/skills/ai-stack/reference/mcps.yaml` |
 
 Read all files before starting any step.
 
@@ -107,7 +107,7 @@ A failure in one does not stop the rest.
 
 ### Step 4 — Claude plugins
 
-Read `plugins/ai-stack/reference/plugins.yaml`. Compare against `claude plugin list` output.
+Read `.claude/skills/ai-stack/reference/plugins.yaml`. Compare against `claude plugin list` output.
 
 Skip any plugin already processed in Step 3 — they will already be installed, and omitting
 them from this section avoids duplicate rows in the summary.
@@ -124,7 +124,7 @@ Record `already installed` / `installed` / `FAILED` for each.
 
 ### Step 5 — External skills
 
-Read `plugins/ai-stack/reference/skills.yaml`.
+Read `.claude/skills/ai-stack/reference/skills.yaml`.
 
 For each skill:
 
@@ -166,7 +166,7 @@ Check currently registered MCPs:
 claude mcp list
 ```
 
-Read `plugins/ai-stack/reference/mcps.yaml`. For each MCP:
+Read `.claude/skills/ai-stack/reference/mcps.yaml`. For each MCP:
 
 - If already registered (match by name) and `force` not passed → record `already registered`.
 - If already registered and `force` was passed → remove first, then re-register:

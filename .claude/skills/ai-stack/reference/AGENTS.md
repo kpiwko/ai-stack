@@ -95,3 +95,36 @@ feat: add user authentication
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ```
 
+---
+
+## 6. Skill Dev & Eval Workflow
+
+Skills live in `.claude/skills/ai-stack/<name>/SKILL.md`. This is both the canonical
+source and the project-skill discovery path — Claude auto-discovers skills here when
+run with `--add-dir <repo-root>`. Evals always test against the repo, not the installed
+plugin cache.
+
+**Dev loop:**
+
+```
+edit .claude/skills/ai-stack/<name>/SKILL.md
+      ↓
+just eval [skill]          # tests repo version directly
+      ↓
+git push                   # publishes to marketplace
+      ↓
+claude plugin update ai-stack@ai-stack   # syncs installed plugin on each machine
+```
+
+**CI:** No plugin install needed — `tools/run-skill.py` passes `--add-dir <repo-root>`
+so Claude finds skills from the checkout via `.claude/skills/ai-stack/`.
+
+**Adding a new skill:** create `.claude/skills/ai-stack/<name>/SKILL.md` directly.
+No symlinks needed.
+
+**Restoring installed plugin to marketplace version** (e.g. after manual cache edits):
+
+```bash
+claude plugin update ai-stack@ai-stack
+```
+

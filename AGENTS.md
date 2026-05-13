@@ -1,1 +1,1 @@
-plugins/ai-stack/reference/AGENTS.md
+.claude/skills/ai-stack/reference/AGENTS.md

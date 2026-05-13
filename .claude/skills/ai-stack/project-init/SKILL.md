@@ -19,9 +19,9 @@ Idempotent by default — skips files that already exist. Pass `force` to overwr
 
 | What | File |
 |---|---|
-| CLAUDE.md template | `<plugin-base>/reference/CLAUDE.md` |
-| AGENTS.md template | `<plugin-base>/reference/AGENTS.md` |
-| Optional skills | `<plugin-base>/reference/skills.yaml` |
+| CLAUDE.md template | `.claude/skills/ai-stack/reference/CLAUDE.md` |
+| AGENTS.md template | `.claude/skills/ai-stack/reference/AGENTS.md` |
+| Optional skills | `.claude/skills/ai-stack/reference/skills.yaml` |
 
 Read all reference files before starting.
 
@@ -39,20 +39,12 @@ ls CLAUDE.md 2>/dev/null && echo "exists" || echo "missing"
 
 If **exists** and `force` was **not** passed → record `CLAUDE.md: already present — skipped`.
 
-If **exists** and `force` **was** passed → overwrite:
-
-```bash
-cp "<plugin-base>/reference/CLAUDE.md" CLAUDE.md
-```
-
+If **exists** and `force` **was** passed → overwrite: use the Write tool to create `CLAUDE.md`
+in CWD with the content of `.claude/skills/ai-stack/reference/CLAUDE.md` from the repo.
 Record `CLAUDE.md: overwritten`.
 
-If **missing** → copy from the plugin reference:
-
-```bash
-cp "<plugin-base>/reference/CLAUDE.md" CLAUDE.md
-```
-
+If **missing** → use the Write tool to create `CLAUDE.md` in CWD with the content of
+`.claude/skills/ai-stack/reference/CLAUDE.md` from the repo.
 Record `CLAUDE.md: created`.
 
 ### Step 2 — Copy AGENTS.md
@@ -65,25 +57,17 @@ ls AGENTS.md 2>/dev/null && echo "exists" || echo "missing"
 
 If **exists** and `force` was **not** passed → record `AGENTS.md: already present — skipped`.
 
-If **exists** and `force` **was** passed → overwrite:
-
-```bash
-cp "<plugin-base>/reference/AGENTS.md" AGENTS.md
-```
-
+If **exists** and `force` **was** passed → overwrite: use the Write tool to create `AGENTS.md`
+in CWD with the content of `.claude/skills/ai-stack/reference/AGENTS.md` from the repo.
 Record `AGENTS.md: overwritten`.
 
-If **missing** → copy from the plugin reference:
-
-```bash
-cp "<plugin-base>/reference/AGENTS.md" AGENTS.md
-```
-
+If **missing** → use the Write tool to create `AGENTS.md` in CWD with the content of
+`.claude/skills/ai-stack/reference/AGENTS.md` from the repo.
 Record `AGENTS.md: created`.
 
 ### Step 3 — Check optional skills
 
-Read `<plugin-base>/reference/skills.yaml`. Collect all entries where `optional: true`.
+Read `.claude/skills/ai-stack/reference/skills.yaml`. Collect all entries where `optional: true`.
 
 For each optional skill, check if it is already installed in `.claude/skills/<name>`:
 

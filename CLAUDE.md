@@ -1,1 +1,1 @@
-plugins/ai-stack/reference/CLAUDE.md
+.claude/skills/ai-stack/reference/CLAUDE.md

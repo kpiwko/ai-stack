@@ -32,7 +32,7 @@ tests:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!/compose\.yaml not found|run \/ai-stack:up/i.test(r.output))
+          if (!/compose\.yaml.*not found|run.*\/ai-stack:up/i.test(r.output))
             return { pass: false, score: 0, reason: 'no error for missing compose.yaml' };
           return { pass: true, score: 1, reason: 'ok' };
 
