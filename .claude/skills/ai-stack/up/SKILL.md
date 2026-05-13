@@ -16,10 +16,13 @@ Idempotent — running again updates services without overwriting existing confi
 
 ## Reference files
 
+> **Path resolution:** `../reference/X` is relative to this skill's base directory.
+> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../reference/X`.
+
 | What | File |
 |---|---|
-| Stack definition | `.claude/skills/ai-stack/reference/compose.yaml` |
-| Environment template | `.claude/skills/ai-stack/reference/env.example` |
+| Stack definition | `../reference/compose.yaml` |
+| Environment template | `../reference/env.example` |
 
 Read both files before starting any step.
 
@@ -57,7 +60,7 @@ ls compose.yaml 2>/dev/null && echo "exists" || echo "missing"
 ```
 
 If **missing** → use the Write tool to create `compose.yaml` in the current directory
-with the content of `.claude/skills/ai-stack/reference/compose.yaml` from the repo.
+with the content of `../reference/compose.yaml` from the repo.
 Record `compose.yaml: created`.
 
 If **present** → record `compose.yaml: found — skipping`.
@@ -73,7 +76,7 @@ ls .env 2>/dev/null && echo "exists" || echo "missing"
 ```
 
 If **missing** → use the Write tool to create `.env` in the current directory
-with the content of `.claude/skills/ai-stack/reference/env.example` from the repo.
+with the content of `../reference/env.example` from the repo.
 Record `.env: created from env.example`.
 
 In both cases — scan `.env` for lines that still contain a placeholder value

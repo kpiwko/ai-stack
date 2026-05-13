@@ -18,13 +18,16 @@ check (Step 1) is fail-fast. Without `force`, already-installed items are skippe
 
 ## Reference files
 
+> **Path resolution:** `../reference/X` is relative to this skill's base directory.
+> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../reference/X`.
+
 | What | File |
 |---|---|
-| Runtimes + package managers | `.claude/skills/ai-stack/reference/bootstrap.yaml` |
-| LSP plugins | `.claude/skills/ai-stack/reference/bootstrap.yaml` (`lsp_plugins` section) |
-| Claude plugins | `.claude/skills/ai-stack/reference/plugins.yaml` |
-| External skills | `.claude/skills/ai-stack/reference/skills.yaml` |
-| MCP servers | `.claude/skills/ai-stack/reference/mcps.yaml` |
+| Runtimes + package managers | `../reference/bootstrap.yaml` |
+| LSP plugins | `../reference/bootstrap.yaml` (`lsp_plugins` section) |
+| Claude plugins | `../reference/plugins.yaml` |
+| External skills | `../reference/skills.yaml` |
+| MCP servers | `../reference/mcps.yaml` |
 
 Read all files before starting any step.
 
@@ -107,7 +110,7 @@ A failure in one does not stop the rest.
 
 ### Step 4 — Claude plugins
 
-Read `.claude/skills/ai-stack/reference/plugins.yaml`. Compare against `claude plugin list` output.
+Read `../reference/plugins.yaml`. Compare against `claude plugin list` output.
 
 Skip any plugin already processed in Step 3 — they will already be installed, and omitting
 them from this section avoids duplicate rows in the summary.
@@ -124,7 +127,7 @@ Record `already installed` / `installed` / `FAILED` for each.
 
 ### Step 5 — External skills
 
-Read `.claude/skills/ai-stack/reference/skills.yaml`.
+Read `../reference/skills.yaml`.
 
 For each skill:
 
@@ -166,7 +169,7 @@ Check currently registered MCPs:
 claude mcp list
 ```
 
-Read `.claude/skills/ai-stack/reference/mcps.yaml`. For each MCP:
+Read `../reference/mcps.yaml`. For each MCP:
 
 - If already registered (match by name) and `force` not passed → record `already registered`.
 - If already registered and `force` was passed → remove first, then re-register:

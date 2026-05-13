@@ -58,6 +58,6 @@ lsp_plugins:
   - rust-analyzer-lsp@claude-plugins-official
 
 # Registry files processed by bootstrap (plugins, skills, MCP servers)
-plugins: .claude/skills/ai-stack/reference/plugins.yaml
-skills:  .claude/skills/ai-stack/reference/skills.yaml
-mcps:    .claude/skills/ai-stack/reference/mcps.yaml
+plugins: ../reference/plugins.yaml
+skills:  ../reference/skills.yaml
+mcps:    ../reference/mcps.yaml
