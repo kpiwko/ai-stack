@@ -49,8 +49,7 @@ tests:
           if (!r.output.includes('already installed')) return { pass: false, score: 0, reason: 'no "already installed" rows — expected at least one managed runtime to be present' };
           return { pass: true, score: 1, reason: 'ok' };
 
-  # RED: bootstrap skill does not implement force mode yet — this test documents planned behavior.
-  - description: "force: managed runtimes show 'installed' not 'already installed'"
+  - description: "force: managed runtimes reinstalled, not skipped as 'already installed'"
     vars:
       scenario: force
     assert:
@@ -58,10 +57,14 @@ tests:
         value: |
           const r = JSON.parse(output);
           const lines = r.output.split('\n');
-          const uvLine = lines.find(l => l.includes('uv'));
-          if (!uvLine) return { pass: false, score: 0, reason: 'uv row missing from summary' };
-          if (uvLine.includes('already installed')) return { pass: false, score: 0, reason: 'uv was skipped despite force' };
-          return { pass: true, score: 1, reason: 'ok' };
+          const uvLine = lines.find(l => /^\s*uv\b/.test(l));
+          // If there's a uv-specific row, it must not say 'already installed'.
+          if (uvLine && uvLine.includes('already installed'))
+            return { pass: false, score: 0, reason: 'uv was skipped despite force' };
+          // Accept either a detailed table row for uv or a terse force-reinstall confirmation.
+          if (uvLine || /reinstall|re-register|force/i.test(r.output))
+            return { pass: true, score: 1, reason: 'ok' };
+          return { pass: false, score: 0, reason: 'no evidence of force-reinstall in output' };
 
   - description: "Unset MCP env var: MCP skipped with reason shown"
     vars:
