@@ -117,13 +117,14 @@ eval skill='all' pattern='' repeat='1':
     set -euo pipefail
     skills=( up down bootstrap project-init )
     [[ "{{skill}}" != "all" ]] && skills=( "{{skill}}" )
+    eval_dir="plugins/ai-stack/evals"
     for s in "${skills[@]}"; do
-        cfg="plugins/ai-stack/evals/promptfooconfig-${s}.yaml"
+        cfg="${eval_dir}/promptfooconfig-${s}.yaml"
         [[ -f "$cfg" ]] || { echo "No eval config for skill: $s"; continue; }
-        args=( --config "$cfg" --no-cache )
+        args=( --config "promptfooconfig-${s}.yaml" --no-cache )
         [[ -n "{{pattern}}" ]] && args+=( --filter-pattern "{{pattern}}" )
         [[ "{{repeat}}" != "1" ]] && args+=( --repeat "{{repeat}}" )
-        npx --yes promptfoo@latest eval "${args[@]}"
+        (cd "$eval_dir" && npx --yes promptfoo@latest eval "${args[@]}")
     done
 
 # Launch Claude Code in an OpenShell sandbox with Vertex AI credentials.
