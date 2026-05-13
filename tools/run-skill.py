@@ -29,7 +29,10 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
     elif key == "up/no-env":
         pass
     elif key == "up/existing-compose":
-        (eval_dir / "compose.yaml").write_text("original")
+        # Seed with valid compose.yaml plus a sentinel comment so we can detect overwrites.
+        # Using real compose so `compose up -d` succeeds and the skill can show UP summary.
+        sentinel = "# SENTINEL-existing-compose\n"
+        (eval_dir / "compose.yaml").write_text(sentinel + compose_src.read_text())
         shutil.copy(env_src, eval_dir / ".env")
     elif key == "up/placeholder-env":
         shutil.copy(env_example_src, eval_dir / ".env")

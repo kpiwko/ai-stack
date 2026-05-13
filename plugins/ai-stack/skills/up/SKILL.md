@@ -50,21 +50,19 @@ If neither is found, stop and display:
 
 ### Step 2 — Handle compose.yaml
 
-Check if `compose.yaml` exists in the current directory:
+Copy the reference compose.yaml only if not already present — never overwrite an
+existing file:
 
 ```bash
-ls compose.yaml 2>/dev/null && echo "exists" || echo "missing"
+if [ ! -f compose.yaml ]; then
+  cp "${CLAUDE_PLUGIN_ROOT}/reference/compose.yaml" compose.yaml
+  echo "compose.yaml: created"
+else
+  echo "compose.yaml: found — skipping"
+fi
 ```
 
-If **exists** → record `compose.yaml: found` and skip.
-
-If **missing** → copy from the plugin:
-
-```bash
-cp "${CLAUDE_PLUGIN_ROOT}/reference/compose.yaml" compose.yaml
-```
-
-Record `compose.yaml: created`.
+Record the output line.
 
 ### Step 3 — Handle .env
 

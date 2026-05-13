@@ -15,7 +15,7 @@ defaultTest:
     - type: javascript
       value: |
         try { JSON.parse(output); return true; }
-        catch(e) { return { pass: false, reason: 'runner did not emit valid JSON' }; }
+        catch(e) { return { pass: false, score: 0, reason: 'runner did not emit valid JSON' }; }
 
 tests:
   - description: "Prerequisites pass: BOOTSTRAP SUMMARY appears in output"
@@ -25,9 +25,9 @@ tests:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!r.output.includes('BOOTSTRAP SUMMARY')) return { pass: false, reason: 'summary missing — skill may have aborted at prerequisites' };
-          if (/go.*MISSING|node.*MISSING/.test(r.output)) return { pass: false, reason: 'prerequisite check failed' };
-          return { pass: true };
+          if (!r.output.includes('BOOTSTRAP SUMMARY')) return { pass: false, score: 0, reason: 'summary missing — skill may have aborted at prerequisites' };
+          if (/go.*MISSING|node.*MISSING/.test(r.output)) return { pass: false, score: 0, reason: 'prerequisite check failed' };
+          return { pass: true, score: 1, reason: 'ok' };
 
   - description: "Already-installed runtimes: marked 'already installed' in summary"
     vars:
@@ -36,9 +36,10 @@ tests:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!r.output.includes('already installed')) return { pass: false, reason: 'no "already installed" rows — expected at least one managed runtime to be present' };
-          return { pass: true };
+          if (!r.output.includes('already installed')) return { pass: false, score: 0, reason: 'no "already installed" rows — expected at least one managed runtime to be present' };
+          return { pass: true, score: 1, reason: 'ok' };
 
+  # RED: bootstrap skill does not implement force mode yet — this test documents planned behavior.
   - description: "force: managed runtimes show 'installed' not 'already installed'"
     vars:
       scenario: force
@@ -48,9 +49,9 @@ tests:
           const r = JSON.parse(output);
           const lines = r.output.split('\n');
           const uvLine = lines.find(l => l.includes('uv'));
-          if (!uvLine) return { pass: false, reason: 'uv row missing from summary' };
-          if (uvLine.includes('already installed')) return { pass: false, reason: 'uv was skipped despite force' };
-          return { pass: true };
+          if (!uvLine) return { pass: false, score: 0, reason: 'uv row missing from summary' };
+          if (uvLine.includes('already installed')) return { pass: false, score: 0, reason: 'uv was skipped despite force' };
+          return { pass: true, score: 1, reason: 'ok' };
 
   - description: "Unset MCP env var: MCP skipped with reason shown"
     vars:
@@ -61,7 +62,7 @@ tests:
           // Only meaningful when DEVLAKE_MCP_SECRET_KEY is unset.
           // If the var is set in the environment, this test is a no-op (returns pass).
           const r = JSON.parse(output);
-          if (process.env.DEVLAKE_MCP_SECRET_KEY) return { pass: true };
+          if (process.env.DEVLAKE_MCP_SECRET_KEY) return { pass: true, score: 1, reason: 'env var set — skip check' };
           if (!r.output.includes('DEVLAKE_MCP_SECRET_KEY not set'))
-            return { pass: false, reason: 'MCP skip reason not shown for unset var' };
-          return { pass: true };
+            return { pass: false, score: 0, reason: 'MCP skip reason not shown for unset var' };
+          return { pass: true, score: 1, reason: 'ok' };

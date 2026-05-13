@@ -11,7 +11,7 @@ defaultTest:
     - type: javascript
       value: |
         try { JSON.parse(output); return true; }
-        catch(e) { return { pass: false, reason: 'runner did not emit valid JSON' }; }
+        catch(e) { return { pass: false, score: 0, reason: 'runner did not emit valid JSON' }; }
 
 tests:
   - description: "compose.yaml present: services stopped, summary shown"
@@ -21,9 +21,9 @@ tests:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!r.output.includes('ai-stack DOWN'))       return { pass: false, reason: 'DOWN summary missing' };
-          if (!r.output.includes('All services stopped')) return { pass: false, reason: '"All services stopped" missing' };
-          return { pass: true };
+          if (!r.output.includes('ai-stack DOWN'))       return { pass: false, score: 0, reason: 'DOWN summary missing' };
+          if (!r.output.includes('All services stopped')) return { pass: false, score: 0, reason: '"All services stopped" missing' };
+          return { pass: true, score: 1, reason: 'ok' };
 
   - description: "No compose.yaml: error shown, skill stops"
     vars:
@@ -33,8 +33,8 @@ tests:
         value: |
           const r = JSON.parse(output);
           if (!/compose\.yaml not found|run \/ai-stack:up/i.test(r.output))
-            return { pass: false, reason: 'no error for missing compose.yaml' };
-          return { pass: true };
+            return { pass: false, score: 0, reason: 'no error for missing compose.yaml' };
+          return { pass: true, score: 1, reason: 'ok' };
 
   - description: "Services already stopped: idempotent, no error output"
     vars:
@@ -43,6 +43,6 @@ tests:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!r.output.includes('ai-stack DOWN')) return { pass: false, reason: 'DOWN summary missing' };
-          if (/\berror\b|\bfailed\b/i.test(r.output)) return { pass: false, reason: 'unexpected error in output' };
-          return { pass: true };
+          if (!r.output.includes('ai-stack DOWN')) return { pass: false, score: 0, reason: 'DOWN summary missing' };
+          if (/\berror\b|\bfailed\b/i.test(r.output)) return { pass: false, score: 0, reason: 'unexpected error in output' };
+          return { pass: true, score: 1, reason: 'ok' };
