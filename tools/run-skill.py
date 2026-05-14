@@ -84,6 +84,11 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
     elif key == "down/already-stopped":
         shutil.copy(compose_src, eval_dir / "compose.yaml")
         shutil.copy(env_src, eval_dir / ".env")
+    elif key == "status/has-compose":
+        shutil.copy(compose_src, eval_dir / "compose.yaml")
+        shutil.copy(env_src, eval_dir / ".env")
+    elif key == "status/no-compose":
+        pass
     elif skill == "bootstrap":
         pass
     elif key == "project-init/empty":

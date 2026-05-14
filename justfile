@@ -109,13 +109,13 @@ lince:
     zd
 
 # Run ai-stack skill evals with promptfoo.
-# skill: up|down|bootstrap|project-init|all (default: all)
+# skill: up|down|bootstrap|project-init|status|all (default: all)
 # pattern: substring filter on test description (default: run all)
 # repeat: run each test N times for pass@k (default: 1)
 eval skill='all' pattern='' repeat='1':
     #!/bin/bash
     set -euo pipefail
-    skills=( up down bootstrap project-init )
+    skills=( up down bootstrap project-init status )
     [[ "{{skill}}" != "all" ]] && skills=( "{{skill}}" )
     eval_dir="plugins/ai-stack/evals"
     for s in "${skills[@]}"; do

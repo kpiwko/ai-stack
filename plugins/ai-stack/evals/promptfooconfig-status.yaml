@@ -1,0 +1,40 @@
+description: /ai-stack:status skill evals
+
+providers:
+  - id: exec
+    config:
+      command: python3 tools/run-skill.py status {{scenario}}
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: |
+        try { JSON.parse(output); return true; }
+        catch(e) { return { pass: false, reason: 'runner did not emit valid JSON: ' + output.slice(0,300) }; }
+
+tests:
+  - description: "compose.yaml in CWD: status shown using local file"
+    vars:
+      scenario: has-compose
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.output.includes('compose.yaml not found'))
+            return { pass: false, reason: 'skill errored despite compose.yaml being present' };
+          if (!r.output.includes('ai-stack STATUS'))
+            return { pass: false, reason: 'STATUS summary header missing from output' };
+          return { pass: true };
+
+  - description: "No compose.yaml in CWD: falls back to plugin reference, status shown"
+    vars:
+      scenario: no-compose
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!r.state.compose_exists && r.output.includes('compose.yaml not found'))
+            return { pass: false, reason: 'skill errored instead of falling back to plugin reference' };
+          if (!r.output.includes('ai-stack STATUS'))
+            return { pass: false, reason: 'STATUS summary header missing — fallback did not work' };
+          return { pass: true };

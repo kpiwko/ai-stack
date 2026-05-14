@@ -7,8 +7,23 @@ description: Show the current health of all ai-stack compose services with endpo
 ## Synopsis
 
 ```
-/ai-stack:status   ← show service health for the compose stack in CWD
+/ai-stack:status   ← show service health for the ai-stack compose services
 ```
+
+The stack runs as a global singleton — services started from the ai-stack repo are
+visible from any working directory. This skill checks CWD for a local compose.yaml
+and falls back to the plugin reference copy so it works from any project directory.
+
+---
+
+## Reference files
+
+> **Path resolution:** `../reference/X` is relative to this skill's base directory.
+> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../reference/X`.
+
+| What | File |
+|---|---|
+| Stack definition (fallback) | `../reference/compose.yaml` |
 
 ---
 
@@ -30,25 +45,37 @@ If neither is found, stop and display:
 ✗ podman / docker compose: not found
 ```
 
-### Step 2 — Check compose.yaml
+### Step 2 — Locate compose.yaml
+
+Check CWD first, then fall back to the plugin reference:
 
 ```bash
-ls compose.yaml 2>/dev/null && echo "exists" || echo "missing"
+if [ -f compose.yaml ]; then
+  echo "cwd"
+elif [ -f "<base-dir>/../reference/compose.yaml" ]; then
+  echo "reference"
+else
+  echo "missing"
+fi
 ```
 
-If missing, display:
+Where `<base-dir>` is the path from the `Base directory for this skill:` header.
+
+- If found in CWD → record `COMPOSE_FILE=compose.yaml` (relative)
+- If found in reference → record `COMPOSE_FILE=<base-dir>/../reference/compose.yaml` (absolute)
+- If neither found → stop and display:
 
 ```
-✗ compose.yaml not found in current directory.
-  Run /ai-stack:up first.
+✗ compose.yaml not found.
+  Run /ai-stack:up first to start the stack.
 ```
 
 ### Step 3 — Collect status
 
-Run:
+Run using whichever compose file was found:
 
 ```bash
-podman compose ps   # or: docker compose ps
+podman compose -f "$COMPOSE_FILE" ps   # or: docker compose -f "$COMPOSE_FILE" ps
 ```
 
 ### Step 4 — Display summary
@@ -67,7 +94,7 @@ workspace-mcp             running    http://localhost:17150/mcp
 devlake-local-mysql-mcp   exited
 devlake-prod-mysql-mcp    running    http://localhost:17300/mcp
 
-Config: <absolute path to CWD>/.env
+Config: <absolute path to COMPOSE_FILE>
 ========================
 ```
 
