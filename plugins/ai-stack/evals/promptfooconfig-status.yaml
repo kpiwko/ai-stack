@@ -1,16 +1,17 @@
 description: /ai-stack:status skill evals
 
+prompts:
+  - '{{scenario}}'
+
 providers:
-  - id: exec
-    config:
-      command: python3 tools/run-skill.py status {{scenario}}
+  - 'exec: python3 ../../../tools/run-skill.py status'
 
 defaultTest:
   assert:
     - type: javascript
       value: |
         try { JSON.parse(output); return true; }
-        catch(e) { return { pass: false, reason: 'runner did not emit valid JSON: ' + output.slice(0,300) }; }
+        catch(e) { return { pass: false, score: 0, reason: 'runner did not emit valid JSON: ' + output.slice(0,300) }; }
 
 tests:
   - description: "compose.yaml in CWD: status shown using local file"
@@ -21,10 +22,10 @@ tests:
         value: |
           const r = JSON.parse(output);
           if (r.output.includes('compose.yaml not found'))
-            return { pass: false, reason: 'skill errored despite compose.yaml being present' };
+            return { pass: false, score: 0, reason: 'skill errored despite compose.yaml being present' };
           if (!r.output.includes('ai-stack STATUS'))
-            return { pass: false, reason: 'STATUS summary header missing from output' };
-          return { pass: true };
+            return { pass: false, score: 0, reason: 'STATUS summary header missing from output' };
+          return { pass: true, score: 1, reason: 'ok' };
 
   - description: "No compose.yaml in CWD: falls back to plugin reference, status shown"
     vars:
@@ -34,7 +35,7 @@ tests:
         value: |
           const r = JSON.parse(output);
           if (!r.state.compose_exists && r.output.includes('compose.yaml not found'))
-            return { pass: false, reason: 'skill errored instead of falling back to plugin reference' };
+            return { pass: false, score: 0, reason: 'skill errored instead of falling back to plugin reference' };
           if (!r.output.includes('ai-stack STATUS'))
-            return { pass: false, reason: 'STATUS summary header missing — fallback did not work' };
-          return { pass: true };
+            return { pass: false, score: 0, reason: 'STATUS summary header missing — fallback did not work' };
+          return { pass: true, score: 1, reason: 'ok' };
