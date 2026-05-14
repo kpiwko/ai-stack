@@ -1,9 +1,10 @@
 ---
+name: ai-stack-modify-skill
 description: Scaffold a new built-in skill in the ai-stack plugin — creates SKILL.md, eval config, runner setup, and wires everything together.
 argument-hint: "[skill-name]"
 ---
 
-# /ai-stack:modify-skill
+# /ai-stack-modify-skill
 
 Project-local dev tool for the ai-stack repo. Creates all the boilerplate for
 a new built-in skill: SKILL.md template, promptfoo eval config, runner scenario
