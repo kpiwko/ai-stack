@@ -1,6 +1,5 @@
 .env
 .env.local
-.agentready/
 .webui_secret_key
 **/google-credentials.json
 **/.env

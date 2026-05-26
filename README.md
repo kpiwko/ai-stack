@@ -153,6 +153,23 @@ Local services are reached via `host.containers.internal` (injected by the Podma
 Gateway logs go to `/tmp/openshell-gateway.log`. See `openshell/bootstrap.md` for full
 setup instructions and known issues.
 
+## Agent readiness
+
+This repo includes an [AgentReady](https://github.com/ambient-code/agentready) assessment
+that scores how well the codebase supports AI coding agents. Reports live in `.agentready/`.
+
+To regenerate:
+
+```bash
+mkdir -p .agentready
+podman run --rm \
+  -v $(pwd):/repo:ro \
+  -v $(pwd)/.agentready:/reports \
+  ghcr.io/ambient-code/agentready:latest assess /repo --output-dir /reports
+```
+
+The latest report is at `.agentready/report-latest.md` (or `.html` for the full version).
+
 ## macOS notes
 
 - Named volumes are managed inside the Podman VM — data persists across restarts.
