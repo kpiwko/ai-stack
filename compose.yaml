@@ -96,7 +96,8 @@ services:
       - "17200:17200"
       - "17201:6080"
     volumes:
-      - ${HOME}/.config/notebooklm-mcp-cli:/root/.config/notebooklm-mcp-cli
+      # :U remaps ownership to container root; :Z relabels for SELinux (Linux/Podman only)
+      - ${HOME}/.config/notebooklm-mcp-cli:/root/.config/notebooklm-mcp-cli:U,Z
     restart: unless-stopped
 
   ##############################################################################
@@ -112,7 +113,8 @@ services:
     ports:
       - "17150:8000"
     volumes:
-      - ${HOME}/.config/workspace-mcp:/root/.config/workspace-mcp
+      # :U remaps ownership to container root; :Z relabels for SELinux (Linux/Podman only)
+      - ${HOME}/.config/workspace-mcp:/root/.config/workspace-mcp:U,Z
     environment:
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}

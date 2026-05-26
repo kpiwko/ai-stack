@@ -95,6 +95,9 @@ feat: add user authentication
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ```
 
+**Never push to a remote repository or open a PR/MR without being explicitly asked.**
+Prepare commits locally and wait for the user to request the push as a separate step.
+
 ---
 
 ## 6. Skill Dev & Eval Workflow

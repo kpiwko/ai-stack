@@ -47,3 +47,17 @@ For any non-trivial task:
 1. Invoke the relevant skill first.
 2. In one message: spawn agents, batch file ops, batch shell commands, batch todos.
 3. New files go in subfolders — never in repo root.
+
+---
+
+## Task Tool Best Practices
+
+- Provide clear, specific prompts.
+- Use appropriate agent types: `Explore` (codebase search), `Plan` (implementation planning), `general-purpose` (multi-step tasks).
+
+---
+
+## Memory & Context
+
+- Use TaskCreate/TaskUpdate to track progress across turns.
+- Keep TODO.md updated for persistence across sessions.
