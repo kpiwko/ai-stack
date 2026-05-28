@@ -169,16 +169,26 @@ Check currently registered MCPs:
 claude mcp list
 ```
 
-Read `../reference/mcps.yaml`. For each MCP:
+Read `../reference/mcps.yaml`. Only process entries where `scope: user` or `scope` is unset
+(default: `user`). Entries with `scope: local` are skipped — they are handled per-project by
+`/ai-stack:project-init`.
+
+Source `.env` from the current directory before expanding any `$VAR` references:
+
+```bash
+set -a; [ -f .env ] && . ./.env; set +a
+```
+
+For each applicable MCP:
 
 - If already registered (match by name) and `force` not passed → record `already registered`.
 - If already registered and `force` was passed → remove first, then re-register:
   ```bash
   claude mcp remove <name>
   ```
-- If `scope` is not set, default to `user`.
-- If any field value contains `$VAR` references, expand from the current shell environment.
-  If a required env var is unset, record `skipped (<VAR> not set)` and skip — do not register with an empty value.
+- If any field value contains `$VAR` references, expand from the shell environment (after
+  sourcing `.env`). If a required env var is still unset, record `skipped (<VAR> not set)`
+  and skip — do not register with an empty value.
 - Otherwise register:
   ```bash
   claude mcp add --transport <transport> --scope <scope> \
@@ -221,8 +231,8 @@ n8n-skills                  skipped (install via /ai-stack:project-init)
 MCPs:
 gmail                       already registered
 gdrive                      registered
-devlake-prod-mysql-mcp      skipped (KONFLUX_MCP_SECRET_KEY not set)
-devlake-local-mysql-mcp     skipped (DEVLAKE_MCP_SECRET_KEY not set)
+devlake-prod-mysql-mcp      skipped (scope: local — run /ai-stack:project-init)
+devlake-local-mysql-mcp     skipped (scope: local — run /ai-stack:project-init)
 
 =========================
 ```
