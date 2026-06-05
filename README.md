@@ -20,20 +20,20 @@ claude plugin marketplace add https://github.com/kpiwko/ai-stack.git --scope use
 claude plugin install ai-stack@ai-stack
 ```
 
-**2. Copy and fill in secrets, then run bootstrap inside a Claude session:**
-
-```bash
-cp env.example .env
-# Edit .env — fill in GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, etc.
-```
+**2. Run bootstrap inside a Claude session:**
 
 ```
 /ai-stack:bootstrap
 ```
 
-Bootstrap starts the compose stack, installs runtimes (uv, pnpm, rustup), LSP plugins
-(gopls, pyright, typescript-lsp, rust-analyzer), Claude plugins (superpowers, context7,
-atlassian, dev, track, quarterly), and registers MCP servers with Claude Code.
+Bootstrap creates `.env` from the template (if missing), installs runtimes (uv, pnpm,
+rustup), LSP plugins (gopls, pyright, typescript-lsp, rust-analyzer), Claude plugins
+(superpowers, context7, atlassian, dev, track, quarterly), and registers MCP servers
+with Claude Code.
+
+If `.env` has placeholder values, bootstrap will list them. Edit `.env` with your
+secrets (Google OAuth credentials, database passwords, etc.) and run
+`/ai-stack:up` to start the services.
 
 **Updating plugins:**
 
