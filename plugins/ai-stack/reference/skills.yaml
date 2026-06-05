@@ -9,13 +9,6 @@
 #   scope: user | project        # user (~/.claude/skills/) or project (.claude/skills/); default: user
 
 skills:
-  - name: template-slide-deck
-    source: toddward/claude-skills-playground
-    path: template-slide-deck
-    version: main
-    optional: true
-    scope: project
-
   - name: n8n-skills
     source: czlonkowski/n8n-skills
     version: main

@@ -161,7 +161,49 @@ If no `path` field, use the repo root (omit the `sparse-checkout set` step and c
 
 Record `installed` or `FAILED`.
 
-### Step 6 — MCP servers
+### Step 6 — Handle .env
+
+Check if `.env` exists in the current directory:
+
+```bash
+ls .env 2>/dev/null && echo "exists" || echo "missing"
+```
+
+If **missing** → use the Write tool to create `.env` in the current directory
+with the content of `../reference/env.example` from the repo.
+Record `.env: created from env.example`.
+
+If **present** → record `.env: found — skipping`.
+
+In both cases — scan `.env` for lines that still contain a placeholder value
+(angle brackets indicate a value that was never filled in):
+
+```bash
+grep -E '^[A-Z_]+=.*<[^>]+>' .env || true
+```
+
+If any placeholder lines are found, display:
+
+```
+⚠ Fill in these variables in .env before the affected services will connect:
+
+  GOOGLE_OAUTH_CLIENT_ID      workspace-mcp (Google OAuth)
+  GOOGLE_OAUTH_CLIENT_SECRET  workspace-mcp (Google OAuth)
+  DEVLAKE_MCP_SECRET_KEY      devlake-local-mysql-mcp
+  KONFLUX_MYSQL_HOST          devlake-prod-mysql-mcp
+  KONFLUX_MYSQL_USER          devlake-prod-mysql-mcp
+  KONFLUX_MYSQL_PASS          devlake-prod-mysql-mcp
+  KONFLUX_MCP_SECRET_KEY      devlake-prod-mysql-mcp
+
+  Edit .env and run /ai-stack:up when ready.
+```
+
+Only show the variables that actually appeared in the `grep` output — do not
+show variables that are already set to real values.
+
+Proceed to Step 7 regardless.
+
+### Step 7 — MCP servers
 
 Check currently registered MCPs:
 
@@ -196,7 +238,7 @@ For each applicable MCP:
   ```
   Record `registered` or `FAILED`.
 
-### Step 7 — Summary
+### Step 8 — Summary
 
 Print a compact status table covering every item processed:
 
@@ -225,8 +267,10 @@ context7                    already installed
 superpowers                 already installed
 
 Skills:
-template-slide-deck         skipped (install via /ai-stack:project-init)
 n8n-skills                  skipped (install via /ai-stack:project-init)
+
+Environment:
+.env                        created from env.example
 
 MCPs:
 gmail                       already registered

@@ -103,7 +103,6 @@ Print the full summary now — before any optional skills or MCP interaction:
 CLAUDE.md     created
 AGENTS.md     already present — skipped
 Skills:
-  template-slide-deck   missing
   n8n-skills            already installed
 MCPs:
   devlake-prod-mysql-mcp    missing
