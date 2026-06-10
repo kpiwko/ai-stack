@@ -75,10 +75,10 @@ tests:
     assert:
       - type: javascript
         value: |
-          // Only meaningful when DEVLAKE_MCP_SECRET_KEY is unset.
+          // Only meaningful when DEVLAKE_LOCAL_MCP_SECRET_KEY is unset.
           // If the var is set in the environment, this test is a no-op (returns pass).
           const r = JSON.parse(output);
-          if (process.env.DEVLAKE_MCP_SECRET_KEY) return { pass: true, score: 1, reason: 'env var set — skip check' };
-          if (!r.output.includes('DEVLAKE_MCP_SECRET_KEY not set'))
+          if (process.env.DEVLAKE_LOCAL_MCP_SECRET_KEY) return { pass: true, score: 1, reason: 'env var set — skip check' };
+          if (!r.output.includes('DEVLAKE_LOCAL_MCP_SECRET_KEY not set'))
             return { pass: false, score: 0, reason: 'MCP skip reason not shown for unset var' };
           return { pass: true, score: 1, reason: 'ok' };

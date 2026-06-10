@@ -212,7 +212,7 @@ claude mcp list
 ```
 
 Read `../reference/mcps.yaml`. Only process entries where `scope: user` or `scope` is unset
-(default: `user`). Entries with `scope: local` are skipped — they are handled per-project by
+(default: `user`). Entries with `scope: project` are skipped — they are handled per-project by
 `/ai-stack:project-init`.
 
 Source `.env` from the current directory before expanding any `$VAR` references:
@@ -267,7 +267,7 @@ context7                    already installed
 superpowers                 already installed
 
 Skills:
-n8n-skills                  skipped (install via /ai-stack:project-init)
+n8n-skills                  skipped (optional)
 
 Environment:
 .env                        created from env.example
@@ -275,10 +275,13 @@ Environment:
 MCPs:
 gmail                       already registered
 gdrive                      registered
-devlake-prod-mysql-mcp      skipped (scope: local — run /ai-stack:project-init)
-devlake-local-mysql-mcp     skipped (scope: local — run /ai-stack:project-init)
+devlake-mysql-local         skipped (scope: project)
+devlake-mysql-staging       skipped (scope: project)
+devlake-mysql-prod          skipped (scope: project)
 
 =========================
+
+Run /ai-stack:project-init in your project to install optional skills and register project-scoped MCPs.
 ```
 
 If any item shows `FAILED`, print its error output beneath the table.

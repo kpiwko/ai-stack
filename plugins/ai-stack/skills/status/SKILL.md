@@ -91,8 +91,9 @@ Service                   Status     Endpoint
 notebooklm-mcp            running    http://localhost:17200/mcp
                                      noVNC: http://localhost:17201/vnc.html
 workspace-mcp             running    http://localhost:17150/mcp
-devlake-local-mysql-mcp   exited
-devlake-prod-mysql-mcp    running    http://localhost:17300/mcp
+devlake-mysql-local       running    http://localhost:17300/mcp
+devlake-mysql-staging     exited
+devlake-mysql-prod        running    http://localhost:17320/mcp
 
 Config: <absolute path to COMPOSE_FILE>
 ========================
@@ -101,5 +102,5 @@ Config: <absolute path to COMPOSE_FILE>
 For any `exited` service, append a hint on the next line:
 
 ```
-✗ devlake-local-mysql-mcp exited — check its required variables in .env
+✗ devlake-mysql-staging exited — check its required variables in .env
 ```

@@ -6,8 +6,9 @@ Personal AI tooling stack: Podman Compose services for MCP servers, plus Claude 
 
 | Service | Port | Description |
 |---|---|---|
-| devlake-local-mysql-mcp | 17301 | Read-only MCP proxy for local DevLake MySQL |
-| devlake-prod-mysql-mcp | 17300 | Read-only MCP proxy for remote Konflux RDS |
+| devlake-mysql-local | 17300 | Read-only MCP proxy for local DevLake MySQL |
+| devlake-mysql-staging | 17310 | Read-only MCP proxy for Konflux staging RDS |
+| devlake-mysql-prod | 17320 | Read-only MCP proxy for Konflux prod RDS |
 | notebooklm-mcp | 17200 | NotebookLM MCP server |
 | workspace-mcp | 17150 | Google Workspace MCP (Gmail, Drive, Calendar, Docs, Sheets) |
 
@@ -58,11 +59,11 @@ just openshell-teardown          # delete sandboxes, stop gateway, clean up stag
 
 Stack lifecycle (`up`, `down`, `status`) is handled by the `/ai-stack:up` and `/ai-stack:down` Claude skills.
 
-## devlake-local-mysql-mcp
+## devlake-mysql-local
 
 Connects to a DevLake MySQL instance running on the host at port 3306. Start DevLake's
-MySQL service first, then register this MCP via `/ai-stack:bootstrap`. The command
-reads `$DEVLAKE_MCP_SECRET_KEY` from the environment — make sure `.env` is sourced first.
+MySQL service first, then register this MCP via `/ai-stack:project-init`. The command
+reads `$DEVLAKE_LOCAL_MCP_SECRET_KEY` from the environment — make sure `.env` is sourced first.
 
 **Optional: connect via shared Podman network instead of host port**
 
@@ -82,7 +83,7 @@ that network and reach MySQL by container name — no host port exposure needed.
 
 3. Add the network to the service and update `MYSQL_HOST` to the MySQL container name:
    ```yaml
-   devlake-local-mysql-mcp:
+   devlake-mysql-local:
      networks: [ai-stack, devprod]
      environment:
        MYSQL_HOST: mysql   # replace with DevLake's MySQL container name

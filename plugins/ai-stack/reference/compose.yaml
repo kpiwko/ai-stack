@@ -12,9 +12,10 @@
 #   podman compose up -d <name>    # start one service
 #
 # Services:
-#   devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (port 17301)
+#   devlake-mysql-local     — MySQL MCP proxy for local DevLake DB (port 17300)
 #                             Requires DevLake MySQL running on host port 3306.
-#   devlake-prod-mysql-mcp  — MySQL MCP proxy for remote Konflux RDS (port 17300)
+#   devlake-mysql-staging   — MySQL MCP proxy for Konflux staging RDS (port 17310)
+#   devlake-mysql-prod      — MySQL MCP proxy for Konflux prod RDS (port 17320)
 #   notebooklm-mcp          — NotebookLM MCP server (port 17200)
 #   workspace-mcp           — Google Workspace MCP server, streamable HTTP transport (port 17150)
 
@@ -27,22 +28,22 @@ networks:
 services:
 
   ##############################################################################
-  # devlake-local-mysql-mcp — MySQL MCP proxy for local DevLake DB (read-only)
+  # devlake-mysql-local — MySQL MCP proxy for local DevLake DB (read-only)
   # Image built by CI: ghcr.io/kpiwko/mcp-mysql:latest
-  # MCP endpoint: http://localhost:17301/mcp  (streamable HTTP transport)
+  # MCP endpoint: http://localhost:17300/mcp  (streamable HTTP transport)
   #
   # Connects to DevLake MySQL via host.containers.internal:3306.
   ##############################################################################
-  devlake-local-mysql-mcp:
+  devlake-mysql-local:
     image: ghcr.io/kpiwko/mcp-mysql:latest
     networks: [ai-stack]
     ports:
-      - "17301:3000"
+      - "17300:3000"
     environment:
       MYSQL_HOST: host.containers.internal
       MYSQL_PORT: "3306"
-      MYSQL_USER: ${DEVLAKE_MYSQL_USER:-merico}
-      MYSQL_PASS: ${DEVLAKE_MYSQL_PASSWORD:-merico}
+      MYSQL_USER: ${DEVLAKE_LOCAL_MYSQL_USER:-merico}
+      MYSQL_PASS: ${DEVLAKE_LOCAL_MYSQL_PASS:-merico}
       MYSQL_DB: lake
       MYSQL_POOL_SIZE: "10"
       MYSQL_QUERY_TIMEOUT: "30000"
@@ -52,25 +53,25 @@ services:
       ALLOW_DELETE_OPERATION: "false"
       IS_REMOTE_MCP: "true"
       PORT: "3000"
-      REMOTE_SECRET_KEY: ${DEVLAKE_MCP_SECRET_KEY}
+      REMOTE_SECRET_KEY: ${DEVLAKE_LOCAL_MCP_SECRET_KEY}
     restart: unless-stopped
 
   ##############################################################################
-  # devlake-prod-mysql-mcp — MySQL MCP proxy for remote Konflux RDS (read-only)
+  # devlake-mysql-staging — MySQL MCP proxy for Konflux staging RDS (read-only)
   # Image built by CI: ghcr.io/kpiwko/mcp-mysql:latest
-  # MCP endpoint: http://localhost:17300/mcp  (streamable HTTP transport)
+  # MCP endpoint: http://localhost:17310/mcp  (streamable HTTP transport)
   ##############################################################################
-  devlake-prod-mysql-mcp:
+  devlake-mysql-staging:
     image: ghcr.io/kpiwko/mcp-mysql:latest
     networks: [ai-stack]
     ports:
-      - "17300:3000"
+      - "17310:3000"
     environment:
-      MYSQL_HOST: ${KONFLUX_MYSQL_HOST}
-      MYSQL_PORT: ${KONFLUX_MYSQL_PORT:-3306}
-      MYSQL_USER: ${KONFLUX_MYSQL_USER}
-      MYSQL_PASS: ${KONFLUX_MYSQL_PASS}
-      MYSQL_DB: ${KONFLUX_MYSQL_DB:-lake}
+      MYSQL_HOST: ${DEVLAKE_STAGING_MYSQL_HOST}
+      MYSQL_PORT: ${DEVLAKE_STAGING_MYSQL_PORT:-3306}
+      MYSQL_USER: ${DEVLAKE_STAGING_MYSQL_USER}
+      MYSQL_PASS: ${DEVLAKE_STAGING_MYSQL_PASS}
+      MYSQL_DB: ${DEVLAKE_STAGING_MYSQL_DB:-lake}
       MYSQL_POOL_SIZE: "10"
       MYSQL_QUERY_TIMEOUT: "30000"
       MYSQL_CACHE_TTL: "60000"
@@ -79,7 +80,34 @@ services:
       ALLOW_DELETE_OPERATION: "false"
       IS_REMOTE_MCP: "true"
       PORT: "3000"
-      REMOTE_SECRET_KEY: ${KONFLUX_MCP_SECRET_KEY}
+      REMOTE_SECRET_KEY: ${DEVLAKE_STAGING_MCP_SECRET_KEY}
+    restart: unless-stopped
+
+  ##############################################################################
+  # devlake-mysql-prod — MySQL MCP proxy for Konflux prod RDS (read-only)
+  # Image built by CI: ghcr.io/kpiwko/mcp-mysql:latest
+  # MCP endpoint: http://localhost:17320/mcp  (streamable HTTP transport)
+  ##############################################################################
+  devlake-mysql-prod:
+    image: ghcr.io/kpiwko/mcp-mysql:latest
+    networks: [ai-stack]
+    ports:
+      - "17320:3000"
+    environment:
+      MYSQL_HOST: ${DEVLAKE_PROD_MYSQL_HOST}
+      MYSQL_PORT: ${DEVLAKE_PROD_MYSQL_PORT:-3306}
+      MYSQL_USER: ${DEVLAKE_PROD_MYSQL_USER}
+      MYSQL_PASS: ${DEVLAKE_PROD_MYSQL_PASS}
+      MYSQL_DB: ${DEVLAKE_PROD_MYSQL_DB:-lake}
+      MYSQL_POOL_SIZE: "10"
+      MYSQL_QUERY_TIMEOUT: "30000"
+      MYSQL_CACHE_TTL: "60000"
+      ALLOW_INSERT_OPERATION: "false"
+      ALLOW_UPDATE_OPERATION: "false"
+      ALLOW_DELETE_OPERATION: "false"
+      IS_REMOTE_MCP: "true"
+      PORT: "3000"
+      REMOTE_SECRET_KEY: ${DEVLAKE_PROD_MCP_SECRET_KEY}
     restart: unless-stopped
 
   ##############################################################################

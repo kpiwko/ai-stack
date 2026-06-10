@@ -27,15 +27,13 @@ tests:
             return { pass: false, score: 0, reason: 'STATUS summary header missing from output' };
           return { pass: true, score: 1, reason: 'ok' };
 
-  - description: "No compose.yaml in CWD: falls back to plugin reference, status shown"
+  - description: "No compose.yaml in CWD: error shown, skill stops"
     vars:
       scenario: no-compose
     assert:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!r.state.compose_exists && r.output.includes('compose.yaml not found'))
-            return { pass: false, score: 0, reason: 'skill errored instead of falling back to plugin reference' };
-          if (!r.output.includes('ai-stack STATUS'))
-            return { pass: false, score: 0, reason: 'STATUS summary header missing — fallback did not work' };
+          if (!/compose\.yaml.*not found|run.*\/ai-stack:up/i.test(r.output))
+            return { pass: false, score: 0, reason: 'no error for missing compose.yaml' };
           return { pass: true, score: 1, reason: 'ok' };
