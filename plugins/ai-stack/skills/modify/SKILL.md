@@ -89,7 +89,7 @@ If not provided as arguments, ask:
 - `url`: e.g. `http://localhost:PORT/mcp` (http/sse)
 - `command` / `args`: (stdio only)
 - `headers`: key/value map with `$VAR` references (optional; used for auth tokens)
-- `scope`: `user`, `project`, or `local` (default: `user`)
+- `scope`: `user` or `project` (default: `user`)
 
 **For `update`:**
 

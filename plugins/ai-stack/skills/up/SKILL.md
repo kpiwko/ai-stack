@@ -93,11 +93,15 @@ If any placeholder lines are found, display:
 
   GOOGLE_OAUTH_CLIENT_ID      workspace-mcp (Google OAuth)
   GOOGLE_OAUTH_CLIENT_SECRET  workspace-mcp (Google OAuth)
-  DEVLAKE_MCP_SECRET_KEY      devlake-local-mysql-mcp
-  KONFLUX_MYSQL_HOST          devlake-prod-mysql-mcp
-  KONFLUX_MYSQL_USER          devlake-prod-mysql-mcp
-  KONFLUX_MYSQL_PASS          devlake-prod-mysql-mcp
-  KONFLUX_MCP_SECRET_KEY      devlake-prod-mysql-mcp
+  DEVLAKE_LOCAL_MCP_SECRET_KEY       devlake-mysql-local
+  DEVLAKE_STAGING_MYSQL_HOST         devlake-mysql-staging
+  DEVLAKE_STAGING_MYSQL_USER         devlake-mysql-staging
+  DEVLAKE_STAGING_MYSQL_PASS         devlake-mysql-staging
+  DEVLAKE_STAGING_MCP_SECRET_KEY     devlake-mysql-staging
+  DEVLAKE_PROD_MYSQL_HOST            devlake-mysql-prod
+  DEVLAKE_PROD_MYSQL_USER            devlake-mysql-prod
+  DEVLAKE_PROD_MYSQL_PASS            devlake-mysql-prod
+  DEVLAKE_PROD_MCP_SECRET_KEY        devlake-mysql-prod
 
   Edit .env and re-run /ai-stack:up when ready.
 ```
@@ -135,8 +139,9 @@ Service                   Status     Endpoint
 notebooklm-mcp            running    http://localhost:17200/mcp
                                      noVNC: http://localhost:17201/vnc.html
 workspace-mcp             running    http://localhost:17150/mcp
-devlake-local-mysql-mcp   running    http://localhost:17301/mcp
-devlake-prod-mysql-mcp    running    http://localhost:17300/mcp
+devlake-mysql-local       running    http://localhost:17300/mcp
+devlake-mysql-staging     running    http://localhost:17310/mcp
+devlake-mysql-prod        running    http://localhost:17320/mcp
 
 Config: <absolute path to CWD>/.env
 ====================================

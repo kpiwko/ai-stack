@@ -8,22 +8,29 @@
 #   args: [...]                        # for stdio
 #   headers:                           # HTTP headers ($VAR expanded from shell env)
 #     Authorization: "Bearer $TOKEN"
-#   scope: user | project | local      # default scope (overridable at install time)
+#   scope: user | project               # default scope (overridable at install time)
 
 mcps:
-  - name: devlake-prod-mysql-mcp
+  - name: devlake-mysql-local
     transport: http
     url: http://localhost:17300/mcp
     headers:
-      Authorization: "Bearer $KONFLUX_MCP_SECRET_KEY"
-    scope: local
+      Authorization: "Bearer $DEVLAKE_LOCAL_MCP_SECRET_KEY"
+    scope: project
 
-  - name: devlake-local-mysql-mcp
+  - name: devlake-mysql-staging
     transport: http
-    url: http://localhost:17301/mcp
+    url: http://localhost:17310/mcp
     headers:
-      Authorization: "Bearer $DEVLAKE_MCP_SECRET_KEY"
-    scope: local
+      Authorization: "Bearer $DEVLAKE_STAGING_MCP_SECRET_KEY"
+    scope: project
+
+  - name: devlake-mysql-prod
+    transport: http
+    url: http://localhost:17320/mcp
+    headers:
+      Authorization: "Bearer $DEVLAKE_PROD_MCP_SECRET_KEY"
+    scope: project
 
   - name: notebooklm
     transport: http

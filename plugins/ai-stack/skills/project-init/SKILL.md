@@ -1,5 +1,5 @@
 ---
-description: Initialise the current directory as an ai-stack project. Copies CLAUDE.md and AGENTS.md from the plugin reference, offers to install optional project-scoped skills, and registers local MCP servers.
+description: Initialise the current directory as an ai-stack project. Copies CLAUDE.md and AGENTS.md from the plugin reference, offers to install optional project-scoped skills, and registers project-scoped MCP servers.
 ---
 
 # /ai-stack:project-init
@@ -25,7 +25,7 @@ Idempotent by default — skips files that already exist. Pass `force` to overwr
 | CLAUDE.md template | `../reference/CLAUDE.md` |
 | AGENTS.md template | `../reference/AGENTS.md` |
 | Optional skills | `../reference/skills.yaml` |
-| Local MCP servers | `../reference/mcps.yaml` |
+| Project MCP servers | `../reference/mcps.yaml` |
 
 Read all reference files before starting.
 
@@ -81,9 +81,9 @@ ls .claude/skills/<name> 2>/dev/null && echo "installed" || echo "missing"
 
 Record each skill's status (`installed` or `missing`). Do not prompt or install anything yet.
 
-### Step 3.5 — Check local MCP servers
+### Step 3.5 — Check project MCP servers
 
-Read `../reference/mcps.yaml`. Collect all entries where `scope: local`.
+Read `../reference/mcps.yaml`. Collect all entries where `scope: project`.
 
 Check which are already registered:
 
@@ -91,22 +91,44 @@ Check which are already registered:
 claude mcp list
 ```
 
-For each local MCP, record status: `registered` or `missing`. Do not prompt or register anything yet.
+For each project MCP, record status: `registered` or `missing`. Do not prompt or register anything yet.
+
+### Step 3.6 — Ensure .mcp.json is in .gitignore
+
+Project-scoped MCPs are written to `.mcp.json`, which contains expanded bearer tokens.
+Ensure `.mcp.json` is listed in `.gitignore`:
+
+```bash
+grep -qxF '.mcp.json' .gitignore 2>/dev/null && echo "present" || echo "missing"
+```
+
+If **missing** → append `.mcp.json` to `.gitignore`:
+
+```bash
+echo '.mcp.json' >> .gitignore
+```
+
+Record `.gitignore: added .mcp.json` or `.gitignore: .mcp.json already present`.
 
 ### Step 4 — Summary
 
-Print the full summary now — before any optional skills or MCP interaction:
+**MANDATORY** — always print the full summary block exactly as shown below (with the
+`=== project-init SUMMARY ===` header), filling in the statuses recorded in Steps 1–3.6.
+Do not skip, abbreviate, or rephrase this block. Print it before any optional-skills or
+MCP interaction:
 
 ```
 === project-init SUMMARY ===
 
-CLAUDE.md     created
-AGENTS.md     already present — skipped
+CLAUDE.md       created
+AGENTS.md       already present — skipped
+.gitignore      added .mcp.json
 Skills:
   n8n-skills            already installed
 MCPs:
-  devlake-prod-mysql-mcp    missing
-  devlake-local-mysql-mcp   already registered
+  devlake-mysql-local       already registered
+  devlake-mysql-staging     missing
+  devlake-mysql-prod        missing
 
 ============================
 
@@ -114,8 +136,6 @@ Next steps:
   1. Edit CLAUDE.md and AGENTS.md to reflect this project's conventions.
   2. Run /ai-stack:up to start the service stack.
 ```
-
-Use the statuses recorded in Steps 1–3.5 to fill in each row.
 
 ### Step 5 — Optional skills offer
 
@@ -146,17 +166,17 @@ cp -r "$tmpdir/<path>/." .claude/skills/<name>/
 Print confirmation for each installed skill:
 
 ```
-template-slide-deck   installed → .claude/skills/template-slide-deck
+n8n-skills            installed → .claude/skills/n8n-skills
 ```
 
-### Step 6 — Local MCP servers offer
+### Step 6 — Project MCP servers offer
 
-If all local MCPs are already registered → print `All local MCP servers already registered.` and stop.
+If all project MCPs are already registered → print `All project MCP servers already registered.` and stop.
 
 If any are missing, use the **AskUserQuestion tool** to offer them:
 
-- `question`: `"Which local MCP servers would you like to register?"`
-- `header`: `"Local MCPs"`
+- `question`: `"Which project MCP servers would you like to register?"`
+- `header`: `"Project MCPs"`
 - `multiSelect`: `true`
 - `options`: one entry per **missing** MCP, with `label` = name and `description` = url
 
@@ -181,7 +201,7 @@ For each selected MCP:
 3. Register:
 
    ```bash
-   claude mcp add <name> <url> --transport <transport> --scope local \
+   claude mcp add <name> <url> --transport <transport> --scope project \
      [--header "KEY: VALUE" ...]
    ```
 
@@ -190,5 +210,5 @@ For each selected MCP:
 Print confirmation for each:
 
 ```
-devlake-prod-mysql-mcp   registered → http://localhost:17300/mcp
+devlake-mysql-staging    registered → http://localhost:17310/mcp
 ```
