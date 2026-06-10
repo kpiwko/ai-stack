@@ -76,13 +76,13 @@ network_policies:
       - { path: /usr/local/bin/claude }
       - { path: /usr/bin/claude }
 
-  # profile: devlake-local-mysql-mcp — read-only MySQL MCP proxy for local DevLake DB
-  # http://host.containers.internal:17301/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
-  devlake-local-mcp:
-    name: devlake-local-mcp
+  # profile: devlake-mysql-local — read-only MySQL MCP proxy for local DevLake DB
+  # http://host.containers.internal:17300/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
+  devlake-mysql-local:
+    name: devlake-mysql-local
     endpoints:
       - host: host.containers.internal
-        port: 17301
+        port: 17300
         protocol: rest
         enforcement: audit
         access: full
@@ -94,13 +94,31 @@ network_policies:
       - { path: /usr/local/bin/claude }
       - { path: /usr/bin/curl }
 
-  # profile: devlake-prod-mysql-mcp — read-only MySQL MCP proxy for Konflux prod RDS
-  # http://host.containers.internal:17300/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
-  devlake-prod-mcp:
-    name: devlake-prod-mcp
+  # profile: devlake-mysql-staging — read-only MySQL MCP proxy for Konflux staging RDS
+  # http://host.containers.internal:17310/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
+  devlake-mysql-staging:
+    name: devlake-mysql-staging
     endpoints:
       - host: host.containers.internal
-        port: 17300
+        port: 17310
+        protocol: rest
+        enforcement: audit
+        access: full
+        allowed_ips:
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+    binaries:
+      - { path: /usr/local/bin/claude }
+      - { path: /usr/bin/curl }
+
+  # profile: devlake-mysql-prod — read-only MySQL MCP proxy for Konflux prod RDS
+  # http://host.containers.internal:17320/mcp  (streamable HTTP, requires REMOTE_SECRET_KEY)
+  devlake-mysql-prod:
+    name: devlake-mysql-prod
+    endpoints:
+      - host: host.containers.internal
+        port: 17320
         protocol: rest
         enforcement: audit
         access: full
