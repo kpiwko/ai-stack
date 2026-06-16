@@ -17,15 +17,15 @@ Idempotent by default — skips files that already exist. Pass `force` to overwr
 
 ## Reference files
 
-> **Path resolution:** `../reference/X` is relative to this skill's base directory.
-> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../reference/X`.
+> **Path resolution:** `../../reference/X` is relative to this skill's base directory.
+> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../../reference/X`.
 
 | What | File |
 |---|---|
-| CLAUDE.md template | `../reference/CLAUDE.md` |
-| AGENTS.md template | `../reference/AGENTS.md` |
-| Optional skills | `../reference/skills.yaml` |
-| Project MCP servers | `../reference/mcps.yaml` |
+| CLAUDE.md template | `../../reference/CLAUDE.md` |
+| AGENTS.md template | `../../reference/AGENTS.md` |
+| Optional skills | `../../reference/skills.yaml` |
+| Project MCP servers | `../../reference/mcps.yaml` |
 
 Read all reference files before starting.
 
@@ -44,11 +44,11 @@ ls CLAUDE.md 2>/dev/null && echo "exists" || echo "missing"
 If **exists** and `force` was **not** passed → record `CLAUDE.md: already present — skipped`.
 
 If **exists** and `force` **was** passed → overwrite: use the Write tool to create `CLAUDE.md`
-in CWD with the content of `../reference/CLAUDE.md` from the repo.
+in CWD with the content of `../../reference/CLAUDE.md` from the repo.
 Record `CLAUDE.md: overwritten`.
 
 If **missing** → use the Write tool to create `CLAUDE.md` in CWD with the content of
-`../reference/CLAUDE.md` from the repo.
+`../../reference/CLAUDE.md` from the repo.
 Record `CLAUDE.md: created`.
 
 ### Step 2 — Copy AGENTS.md
@@ -62,16 +62,16 @@ ls AGENTS.md 2>/dev/null && echo "exists" || echo "missing"
 If **exists** and `force` was **not** passed → record `AGENTS.md: already present — skipped`.
 
 If **exists** and `force` **was** passed → overwrite: use the Write tool to create `AGENTS.md`
-in CWD with the content of `../reference/AGENTS.md` from the repo.
+in CWD with the content of `../../reference/AGENTS.md` from the repo.
 Record `AGENTS.md: overwritten`.
 
 If **missing** → use the Write tool to create `AGENTS.md` in CWD with the content of
-`../reference/AGENTS.md` from the repo.
+`../../reference/AGENTS.md` from the repo.
 Record `AGENTS.md: created`.
 
 ### Step 3 — Check optional skills
 
-Read `../reference/skills.yaml`. Collect all entries where `optional: true`.
+Read `../../reference/skills.yaml`. Collect all entries where `optional: true`.
 
 For each optional skill, check if it is already installed in `.claude/skills/<name>`:
 
@@ -83,7 +83,7 @@ Record each skill's status (`installed` or `missing`). Do not prompt or install 
 
 ### Step 3.5 — Check project MCP servers
 
-Read `../reference/mcps.yaml`. Collect all entries where `scope: project`.
+Read `../../reference/mcps.yaml`. Collect all entries where `scope: project`.
 
 Check which are already registered:
 
