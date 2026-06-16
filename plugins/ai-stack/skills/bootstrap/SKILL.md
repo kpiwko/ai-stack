@@ -18,16 +18,16 @@ check (Step 1) is fail-fast. Without `force`, already-installed items are skippe
 
 ## Reference files
 
-> **Path resolution:** `../reference/X` is relative to this skill's base directory.
-> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../reference/X`.
+> **Path resolution:** `../../reference/X` is relative to this skill's base directory.
+> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../../reference/X`.
 
 | What | File |
 |---|---|
-| Runtimes + package managers | `../reference/bootstrap.yaml` |
-| LSP plugins | `../reference/bootstrap.yaml` (`lsp_plugins` section) |
-| Claude plugins | `../reference/plugins.yaml` |
-| External skills | `../reference/skills.yaml` |
-| MCP servers | `../reference/mcps.yaml` |
+| Runtimes + package managers | `../../reference/bootstrap.yaml` |
+| LSP plugins | `../../reference/bootstrap.yaml` (`lsp_plugins` section) |
+| Claude plugins | `../../reference/plugins.yaml` |
+| External skills | `../../reference/skills.yaml` |
+| MCP servers | `../../reference/mcps.yaml` |
 
 Read all files before starting any step.
 
@@ -110,7 +110,7 @@ A failure in one does not stop the rest.
 
 ### Step 4 — Claude plugins
 
-Read `../reference/plugins.yaml`. Compare against `claude plugin list` output.
+Read `../../reference/plugins.yaml`. Compare against `claude plugin list` output.
 
 Skip any plugin already processed in Step 3 — they will already be installed, and omitting
 them from this section avoids duplicate rows in the summary.
@@ -127,7 +127,7 @@ Record `already installed` / `installed` / `FAILED` for each.
 
 ### Step 5 — External skills
 
-Read `../reference/skills.yaml`.
+Read `../../reference/skills.yaml`.
 
 For each skill:
 
@@ -170,7 +170,7 @@ ls .env 2>/dev/null && echo "exists" || echo "missing"
 ```
 
 If **missing** → use the Write tool to create `.env` in the current directory
-with the content of `../reference/env.example` from the repo.
+with the content of `../../reference/env.example` from the repo.
 Record `.env: created from env.example`.
 
 If **present** → record `.env: found — skipping`.
@@ -211,7 +211,7 @@ Check currently registered MCPs:
 claude mcp list
 ```
 
-Read `../reference/mcps.yaml`. Only process entries where `scope: user` or `scope` is unset
+Read `../../reference/mcps.yaml`. Only process entries where `scope: user` or `scope` is unset
 (default: `user`). Entries with `scope: project` are skipped — they are handled per-project by
 `/ai-stack:project-init`.
 

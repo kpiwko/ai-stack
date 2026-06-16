@@ -18,12 +18,12 @@ and falls back to the plugin reference copy so it works from any project directo
 
 ## Reference files
 
-> **Path resolution:** `../reference/X` is relative to this skill's base directory.
-> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../reference/X`.
+> **Path resolution:** `../../reference/X` is relative to this skill's base directory.
+> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../../reference/X`.
 
 | What | File |
 |---|---|
-| Stack definition (fallback) | `../reference/compose.yaml` |
+| Stack definition (fallback) | `../../reference/compose.yaml` |
 
 ---
 
@@ -52,7 +52,7 @@ Check CWD first, then fall back to the plugin reference:
 ```bash
 if [ -f compose.yaml ]; then
   echo "cwd"
-elif [ -f "<base-dir>/../reference/compose.yaml" ]; then
+elif [ -f "<base-dir>/../../reference/compose.yaml" ]; then
   echo "reference"
 else
   echo "missing"
@@ -62,7 +62,7 @@ fi
 Where `<base-dir>` is the path from the `Base directory for this skill:` header.
 
 - If found in CWD → record `COMPOSE_FILE=compose.yaml` (relative)
-- If found in reference → record `COMPOSE_FILE=<base-dir>/../reference/compose.yaml` (absolute)
+- If found in reference → record `COMPOSE_FILE=<base-dir>/../../reference/compose.yaml` (absolute)
 - If neither found → stop and display:
 
 ```

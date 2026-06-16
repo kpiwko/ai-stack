@@ -20,15 +20,15 @@ argument-hint: "[plugin|skill|mcp] [add|update|remove]"
 
 ## Registry files
 
-> **Path resolution:** `../reference/X` is relative to this skill's base directory.
-> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../reference/X`.
+> **Path resolution:** `../../reference/X` is relative to this skill's base directory.
+> Use the absolute path from the `Base directory for this skill:` header: `<base-dir>/../../reference/X`.
 
 | Type | File |
 |---|---|
 | plugin — built-in | inline table below |
-| plugin — external | `../reference/plugins.yaml` |
-| skill | `../reference/skills.yaml` |
-| mcp | `../reference/mcps.yaml` |
+| plugin — external | `../../reference/plugins.yaml` |
+| skill | `../../reference/skills.yaml` |
+| mcp | `../../reference/mcps.yaml` |
 
 Version is tracked in `.claude-plugin/marketplace.json` (the `"version"` field of the `"ai-stack"` plugin entry).
 
@@ -106,13 +106,13 @@ Ask for the entry name.
 
 - **add**: check whether the entry already exists:
   - Built-in plugin: scan the inline table above by name.
-  - External plugin / skill / mcp: scan `../reference/<type>s.yaml` by name.
+  - External plugin / skill / mcp: scan `../../reference/<type>s.yaml` by name.
   - If found: show it and ask — update it or cancel?
     - If update: treat as `update` from here, with patch version bump.
     - If cancel: exit.
 - **update / remove**: find the entry by name:
   - Built-in plugin: scan the inline table above.
-  - External: scan `../reference/<type>s.yaml`.
+  - External: scan `../../reference/<type>s.yaml`.
   - If not found: show error and exit.
 
 ### Step 4: Preview
@@ -122,7 +122,7 @@ Show what will change and the version bump. Do not modify any file until the use
 **add / update:**
 ```
 === MODIFY PREVIEW ===
-File:    ../reference/<type>s.yaml
+File:    ../../reference/<type>s.yaml
 Action:  <add new entry | update existing entry>
 
   - name: <name>
@@ -143,7 +143,7 @@ Omit fields that do not apply to this entry type (e.g. `url`/`scope` for plugins
 **remove:**
 ```
 === MODIFY PREVIEW ===
-File:    ../reference/<type>s.yaml
+File:    ../../reference/<type>s.yaml
 Action:  remove entry
 
   - name: <name>
@@ -184,7 +184,7 @@ If yes:
 ```bash
 # Stage the file modified in step 5 plus marketplace.json:
 # Built-in plugin changes: .claude/skills/ai-stack/modify/SKILL.md
-# External changes: ../reference/<type>s.yaml
+# External changes: ../../reference/<type>s.yaml
 git add <modified-file> .claude-plugin/marketplace.json
 git commit -m "chore(ai-stack): <add|update|remove> <type> <name>"
 ```
