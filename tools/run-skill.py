@@ -53,6 +53,10 @@ def run_claude(claude_cmd: list[str], work_dir: Path, retries: int = 2, retry_de
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+SKILL_PLUGIN_MAP = {
+    "git-workflow": ("dev", "dev"),
+}
+
 def die(msg: str) -> None:
     print(msg, file=sys.stderr)
     sys.exit(1)
@@ -105,6 +109,33 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
         (eval_dir / "CLAUDE.md").write_text("old content")
     elif key == "project-init/optional-skill":
         pass
+    elif skill == "git-workflow":
+        if scenario in ("start-single", "start-fork", "pr-single"):
+            origin_bare = eval_dir / "origin.git"
+            subprocess.run(["git", "init", "--bare", str(origin_bare)], check=True)
+
+            repo = eval_dir / "repo"
+            subprocess.run(["git", "init", str(repo)], check=True)
+            subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", str(origin_bare)], check=True)
+
+            (repo / "README.md").write_text("# Test repo\n")
+            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-m", "init"], check=True)
+            subprocess.run(["git", "-C", str(repo), "push", "-u", "origin", "main"], check=True)
+
+        if scenario == "start-fork":
+            upstream_bare = eval_dir / "upstream.git"
+            subprocess.run(["git", "init", "--bare", str(upstream_bare)], check=True)
+            repo = eval_dir / "repo"
+            subprocess.run(["git", "-C", str(repo), "remote", "add", "upstream", str(upstream_bare)], check=True)
+            subprocess.run(["git", "-C", str(repo), "push", "upstream", "main"], check=True)
+
+        if scenario == "pr-single":
+            repo = eval_dir / "repo"
+            subprocess.run(["git", "-C", str(repo), "checkout", "-b", "feat/test-feature"], check=True)
+            (repo / "feature.txt").write_text("new feature\n")
+            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: add test feature"], check=True)
     else:
         die(f"Unknown scenario: {key}")
 
@@ -116,7 +147,7 @@ def collect_state(eval_dir: Path) -> dict:
         except FileNotFoundError:
             return ""
 
-    return {
+    state = {
         "compose_exists":   (eval_dir / "compose.yaml").exists(),
         "env_exists":       (eval_dir / ".env").exists(),
         "certs_exists":     (eval_dir / "certs" / "rds-combined-ca-bundle.pem").exists(),
@@ -128,6 +159,29 @@ def collect_state(eval_dir: Path) -> dict:
         "claude_md_content": read(eval_dir / "CLAUDE.md"),
     }
 
+    # Git workflow state
+    repo = eval_dir / "repo"
+    if repo.exists():
+        branch = subprocess.run(
+            ["git", "-C", str(repo), "branch", "--show-current"],
+            capture_output=True, text=True
+        ).stdout.strip()
+        state["current_branch"] = branch
+
+        remotes = subprocess.run(
+            ["git", "-C", str(repo), "remote", "-v"],
+            capture_output=True, text=True
+        ).stdout.strip()
+        state["remotes"] = remotes
+
+        log = subprocess.run(
+            ["git", "-C", str(repo), "log", "--oneline", "-5"],
+            capture_output=True, text=True
+        ).stdout.strip()
+        state["git_log"] = log
+
+    return state
+
 
 def build_skill_prompt(skill: str, args: str) -> str:
     """Read SKILL.md from the repo and prepend the invocation context header.
@@ -135,9 +189,10 @@ def build_skill_prompt(skill: str, args: str) -> str:
     Passing the skill content directly as the -p prompt means evals work from
     local repo files without needing the plugin installed globally.
     """
-    skill_dir = REPO_ROOT / "plugins" / "ai-stack" / "skills" / skill
+    plugin_name, invocation_prefix = SKILL_PLUGIN_MAP.get(skill, ("ai-stack", "ai-stack"))
+    skill_dir = REPO_ROOT / "plugins" / plugin_name / "skills" / skill
     skill_md = (skill_dir / "SKILL.md").read_text()
-    invocation = f"/ai-stack:{skill}{args}"
+    invocation = f"/{invocation_prefix}:{skill}{args}"
     return f"Base directory for this skill: {skill_dir}\nInvoked as: {invocation}\n\n{skill_md}"
 
 
@@ -169,14 +224,18 @@ def main() -> None:
             # Non-bootstrap: pass SKILL.md content directly so evals work from local
             # repo files without the plugin being globally installed.
             # --add-dir eval_dir: file isolation (compose.yaml, .env, etc.)
-            # --add-dir plugins/ai-stack: reference file access (../reference/ paths)
+            # --add-dir plugins/<plugin>: reference file access (../reference/ paths)
             prompt = build_skill_prompt(skill, args)
             work_dir = eval_dir
+            # git-workflow runs inside the repo subdirectory
+            if skill == "git-workflow":
+                work_dir = eval_dir / "repo"
+            plugin_name = SKILL_PLUGIN_MAP.get(skill, ("ai-stack",))[0]
             claude_cmd = [
                 "claude", "-p", prompt,
                 "--dangerously-skip-permissions",
                 "--add-dir", str(eval_dir),
-                "--add-dir", str(REPO_ROOT / "plugins" / "ai-stack"),
+                "--add-dir", str(REPO_ROOT / "plugins" / plugin_name),
             ]
 
         try:

@@ -1,0 +1,52 @@
+description: /dev:git-workflow skill evals
+
+prompts:
+  - '{{scenario}}'
+
+providers:
+  - 'exec: python3 ../../../tools/run-skill.py git-workflow'
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: |
+        try { JSON.parse(output); return true; }
+        catch(e) { return { pass: false, score: 0, reason: 'runner did not emit valid JSON' }; }
+
+tests:
+  - description: "start mode (single remote): detects platform and creates feature branch"
+    vars:
+      scenario: start-single
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/single.*remote|single/i.test(r.output))
+            return { pass: false, score: 0, reason: 'did not detect single-remote topology' };
+          if (!r.state.current_branch || r.state.current_branch === 'main')
+            return { pass: false, score: 0, reason: 'still on main — feature branch not created' };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "start mode (fork): detects upstream remote"
+    vars:
+      scenario: start-fork
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/fork|upstream/i.test(r.output))
+            return { pass: false, score: 0, reason: 'did not detect fork topology' };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "pr mode: shows diff and commit log before proceeding"
+    vars:
+      scenario: pr-single
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/diff|changes|stat/i.test(r.output))
+            return { pass: false, score: 0, reason: 'diff stat not shown to user' };
+          if (!/feat.*test.feature|commit/i.test(r.output))
+            return { pass: false, score: 0, reason: 'commit log not shown' };
+          return { pass: true, score: 1, reason: 'ok' };
