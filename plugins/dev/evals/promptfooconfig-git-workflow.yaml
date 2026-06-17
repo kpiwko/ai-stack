@@ -50,3 +50,14 @@ tests:
           if (!/feat.*test.feature|commit/i.test(r.output))
             return { pass: false, score: 0, reason: 'commit log not shown' };
           return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "review mode: lists PRs or shows review guidance"
+    vars:
+      scenario: review-list
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/review|PR|MR|pull.request|merge.request/i.test(r.output))
+            return { pass: false, score: 0, reason: 'no review-related output detected' };
+          return { pass: true, score: 1, reason: 'ok' };

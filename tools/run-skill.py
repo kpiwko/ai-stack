@@ -110,7 +110,7 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
     elif key == "project-init/optional-skill":
         pass
     elif skill == "git-workflow":
-        if scenario in ("start-single", "start-fork", "pr-single"):
+        if scenario in ("start-single", "start-fork", "pr-single", "review-list"):
             origin_bare = eval_dir / "origin.git"
             subprocess.run(["git", "init", "--bare", str(origin_bare)], check=True)
 
@@ -136,6 +136,15 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
             (repo / "feature.txt").write_text("new feature\n")
             subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
             subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: add test feature"], check=True)
+
+        if scenario == "review-list":
+            repo = eval_dir / "repo"
+            subprocess.run(["git", "-C", str(repo), "checkout", "-b", "feat/other-work"], check=True)
+            (repo / "other.txt").write_text("other work\n")
+            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: other work"], check=True)
+            subprocess.run(["git", "-C", str(repo), "push", "origin", "feat/other-work"], check=True)
+            subprocess.run(["git", "-C", str(repo), "checkout", "main"], check=True)
     else:
         die(f"Unknown scenario: {key}")
 
