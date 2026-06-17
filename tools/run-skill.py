@@ -64,18 +64,24 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
     compose_src = REPO_ROOT / "compose.yaml"
     env_example_src = REPO_ROOT / "plugins" / "ai-stack" / "reference" / "env.example"
 
+    def seed_dummy_cert(d: Path) -> None:
+        certs_dir = d / "certs"
+        certs_dir.mkdir(exist_ok=True)
+        (certs_dir / "rds-combined-ca-bundle.pem").write_text("# dummy CA cert for eval\n")
+
     if key == "up/fresh":
         shutil.copy(env_src, eval_dir / ".env")
+        seed_dummy_cert(eval_dir)
     elif key == "up/no-env":
-        pass
+        seed_dummy_cert(eval_dir)
     elif key == "up/existing-compose":
-        # Seed with valid compose.yaml plus a sentinel comment so we can detect overwrites.
-        # Using real compose so `compose up -d` succeeds and the skill can show UP summary.
         sentinel = "# SENTINEL-existing-compose\n"
         (eval_dir / "compose.yaml").write_text(sentinel + compose_src.read_text())
         shutil.copy(env_src, eval_dir / ".env")
+        seed_dummy_cert(eval_dir)
     elif key == "up/placeholder-env":
         shutil.copy(env_example_src, eval_dir / ".env")
+        seed_dummy_cert(eval_dir)
     elif key == "down/has-compose":
         shutil.copy(compose_src, eval_dir / "compose.yaml")
         shutil.copy(env_src, eval_dir / ".env")
@@ -113,6 +119,7 @@ def collect_state(eval_dir: Path) -> dict:
     return {
         "compose_exists":   (eval_dir / "compose.yaml").exists(),
         "env_exists":       (eval_dir / ".env").exists(),
+        "certs_exists":     (eval_dir / "certs" / "rds-combined-ca-bundle.pem").exists(),
         "claude_md_exists": (eval_dir / "CLAUDE.md").exists(),
         "agents_md_exists": (eval_dir / "AGENTS.md").exists(),
         "skill_dir_exists": (eval_dir / ".claude" / "skills").is_dir(),

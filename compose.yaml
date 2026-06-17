@@ -66,6 +66,8 @@ services:
     networks: [ai-stack]
     ports:
       - "17310:3000"
+    volumes:
+      - ./certs/rds-combined-ca-bundle.pem:/etc/ssl/rds-ca.pem:ro
     environment:
       MYSQL_HOST: ${DEVLAKE_STAGING_MYSQL_HOST}
       MYSQL_PORT: ${DEVLAKE_STAGING_MYSQL_PORT:-3306}
@@ -80,6 +82,9 @@ services:
       ALLOW_DELETE_OPERATION: "false"
       IS_REMOTE_MCP: "true"
       PORT: "3000"
+      MYSQL_SSL: "true"
+      MYSQL_SSL_REJECT_UNAUTHORIZED: "true"
+      MYSQL_SSL_CA: /etc/ssl/rds-ca.pem
       REMOTE_SECRET_KEY: ${DEVLAKE_STAGING_MCP_SECRET_KEY}
     restart: unless-stopped
 
@@ -93,6 +98,8 @@ services:
     networks: [ai-stack]
     ports:
       - "17320:3000"
+    volumes:
+      - ./certs/rds-combined-ca-bundle.pem:/etc/ssl/rds-ca.pem:ro
     environment:
       MYSQL_HOST: ${DEVLAKE_PROD_MYSQL_HOST}
       MYSQL_PORT: ${DEVLAKE_PROD_MYSQL_PORT:-3306}
@@ -107,6 +114,9 @@ services:
       ALLOW_DELETE_OPERATION: "false"
       IS_REMOTE_MCP: "true"
       PORT: "3000"
+      MYSQL_SSL: "true"
+      MYSQL_SSL_REJECT_UNAUTHORIZED: "true"
+      MYSQL_SSL_CA: /etc/ssl/rds-ca.pem
       REMOTE_SECRET_KEY: ${DEVLAKE_PROD_MCP_SECRET_KEY}
     restart: unless-stopped
 

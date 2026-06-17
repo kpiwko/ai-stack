@@ -23,6 +23,7 @@ tests:
           const r = JSON.parse(output);
           if (!r.state.compose_exists)           return { pass: false, score: 0, reason: 'compose.yaml not created' };
           if (!r.state.env_exists)               return { pass: false, score: 0, reason: '.env not created' };
+          if (!r.state.certs_exists)             return { pass: false, score: 0, reason: 'RDS CA cert not present' };
           if (!r.output.includes('ai-stack UP')) return { pass: false, score: 0, reason: 'summary header missing from output' };
           return { pass: true, score: 1, reason: 'ok' };
 
