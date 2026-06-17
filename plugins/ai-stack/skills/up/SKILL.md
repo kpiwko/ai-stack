@@ -109,7 +109,28 @@ If any placeholder lines are found, display:
 Only show the variables that actually appeared in the `grep` output — do not
 show variables that are already set to real values.
 
-Proceed to Step 4 regardless. Services with missing vars will start but not connect.
+Proceed to Step 3.5 regardless. Services with missing vars will start but not connect.
+
+### Step 3.5 — Download RDS CA bundle
+
+Check if the CA certificate exists:
+
+```bash
+ls certs/rds-combined-ca-bundle.pem 2>/dev/null && echo "exists" || echo "missing"
+```
+
+If **missing** → download it:
+
+```bash
+mkdir -p certs
+curl -fsSL -o certs/rds-combined-ca-bundle.pem \
+  https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+```
+
+Record `rds-ca-bundle: downloaded` or `rds-ca-bundle: found — skipping`.
+
+If the download fails (curl exits non-zero), display a warning but proceed —
+the staging/prod services will start but fail to connect until the cert is available.
 
 ### Step 4 — Start services
 
