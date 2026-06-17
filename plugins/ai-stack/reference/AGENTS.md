@@ -131,3 +131,40 @@ No symlinks needed.
 claude plugin update ai-stack@ai-stack
 ```
 
+---
+
+## 7. Git Workflow
+
+### Remotes
+
+- The user's own repository (or fork) is always `origin`.
+- If the repository is a fork, the original (upstream) repo is `upstream`.
+- Never rename or reorder these. If the current setup doesn't match, flag it
+  to the user rather than fixing silently.
+
+### Branching
+
+- All work happens on a feature branch, never directly on main/master/default.
+- Feature branches are based on a freshly pulled default branch.
+  - Single-remote: `git pull origin main`
+  - Fork: sync `origin/main` with `upstream/main` first, then branch.
+- Branch naming: `<type>/<short-description>` (e.g. `feat/git-workflow-skill`,
+  `fix/auth-header`). Types match conventional commit types.
+
+### Committing
+
+- Follow Conventional Commits (section 5).
+- Multiple small commits during work are fine — the user may organise them
+  into logical groups before the PR (not necessarily a single squash).
+- After completing work, always show `git diff <default-branch>..HEAD --stat`
+  and the commit log, then wait for user acknowledgement before proceeding.
+
+### Pushing & PRs
+
+- **Never push or create a PR/MR without explicit user approval.**
+- When ready to push, show a summary: branch name, commit count, diff stat.
+- Before creating a PR/MR, show the proposed title and body for user review.
+- PRs/MRs target `origin` by default (the user's remote), not `upstream`,
+  unless the user explicitly says otherwise.
+- Use `gh` for GitHub repos, `glab` for GitLab repos. Detect which platform
+  by checking remote URLs (`git remote -v`).
