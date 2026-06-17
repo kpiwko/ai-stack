@@ -38,6 +38,7 @@ Invoke the relevant skill before starting a task.
 | `/ai-stack:status` | Check service health |
 | `/ai-stack:project-init` | Initialise current directory (CLAUDE.md, AGENTS.md, optional skills) |
 | `/dev:review-cr` | Run CodeRabbit review on committed changes |
+| `/dev:git-workflow` | Start feature branch or prepare PR/MR |
 
 ---
 

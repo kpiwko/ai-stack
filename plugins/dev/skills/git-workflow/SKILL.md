@@ -1,6 +1,6 @@
 ---
-description: "Start feature work or prepare a PR/MR. Detects GitHub/GitLab, handles forks, enforces approval checkpoints."
-argument-hint: "[start|pr]"
+description: "Start feature work, prepare a PR/MR, or review an existing PR/MR. Detects GitHub/GitLab, handles forks, enforces approval checkpoints."
+argument-hint: "<start|pr|review> or describe what you need"
 ---
 
 # /dev:git-workflow
@@ -10,13 +10,20 @@ argument-hint: "[start|pr]"
 ```
 /dev:git-workflow start [branch-name]   # set up a feature branch
 /dev:git-workflow pr                    # prepare and create PR/MR
+/dev:git-workflow review [PR-number|URL] # check out and review a PR/MR
 ```
 
-Two modes: **start** sets up the working branch; **pr** prepares the pull/merge request.
-If no argument is given, infer from context (no commits beyond default branch → start;
-commits exist → pr).
+Three modes: **start** sets up the working branch; **pr** prepares the pull/merge
+request; **review** checks out an existing PR/MR for review.
 
-**Announce at start:** "Using git-workflow to [set up a feature branch / prepare a PR]."
+If no explicit mode is given, infer from context:
+- Free-form like "new feature", "start work", branch name → **start**
+- "submit", "open PR", "send for review" → **pr**
+- PR/MR number, URL, or "review", "check PR" → **review**
+- No commits beyond default branch → **start**
+- Commits exist beyond default branch → **pr**
+
+**Announce at start:** "Using git-workflow to [set up a feature branch / prepare a PR / review PR #N]."
 
 **Prerequisites:** This skill requires AGENTS.md section 7 (Git Workflow) to be present
 in the project. All remote naming, branching, and approval rules are defined there and
@@ -215,6 +222,123 @@ Target:  origin/$DEFAULT_BRANCH
 
 ---
 
+## Mode: review
+
+Check out an existing PR/MR and guide the user through reviewing it.
+
+### Step 1: Identify the PR/MR
+
+If a PR number or URL was provided as argument, use it. Otherwise, list open PRs
+and ask the user which one to review:
+
+GitHub:
+
+```bash
+gh pr list --limit 10
+```
+
+GitLab:
+
+```bash
+glab mr list --per-page 10
+```
+
+### Step 2: Show PR/MR details
+
+GitHub:
+
+```bash
+gh pr view $PR_NUMBER
+gh pr diff $PR_NUMBER --stat
+```
+
+GitLab:
+
+```bash
+glab mr view $MR_NUMBER
+glab mr diff $MR_NUMBER --stat
+```
+
+Present to user:
+
+```
+## PR/MR #N: <title>
+
+**Author:** <author>
+**Branch:** <head> → <base>
+**Status:** <status>
+
+[diff stat]
+
+Options:
+  1. Check out locally and review
+  2. Show full diff here
+  3. Add a comment / approve / request changes
+```
+
+**Wait for user response.**
+
+### Step 3: Check out locally (if requested)
+
+GitHub:
+
+```bash
+gh pr checkout $PR_NUMBER
+```
+
+GitLab:
+
+```bash
+glab mr checkout $MR_NUMBER
+```
+
+After checkout, show:
+
+```
+Checked out PR/MR #N locally on branch '<branch-name>'.
+
+You can now:
+- Browse the code, run tests, try it out
+- When done, tell me to leave feedback or return to your branch
+```
+
+### Step 4: Leave feedback (if requested)
+
+Help the user draft review comments. Show proposed comment/review before
+submitting:
+
+GitHub:
+
+```bash
+gh pr review $PR_NUMBER --approve --body "$COMMENT"
+gh pr review $PR_NUMBER --request-changes --body "$COMMENT"
+gh pr review $PR_NUMBER --comment --body "$COMMENT"
+```
+
+GitLab:
+
+```bash
+glab mr approve $MR_NUMBER
+glab mr note $MR_NUMBER --message "$COMMENT"
+```
+
+**Wait for user approval before submitting any review or comment.**
+
+### Step 5: Return to previous branch
+
+After review is complete:
+
+```bash
+git checkout -
+```
+
+```
+Returned to branch '<previous-branch>'.
+Review of PR/MR #N complete.
+```
+
+---
+
 ## Red Flags — Never Do
 
 - Push without showing diff and getting approval
@@ -224,3 +348,5 @@ Target:  origin/$DEFAULT_BRANCH
 - Force-push without explicit user request
 - Assume platform — always detect from remotes
 - Squash all commits into one without asking — user may want logical groups
+- Submit a review or comment without showing it to the user first
+- Check out a PR without telling the user which branch they were on

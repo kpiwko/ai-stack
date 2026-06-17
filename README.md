@@ -1,22 +1,54 @@
 # ai-stack
 
-Personal AI tooling stack: Podman Compose services for MCP servers, plus Claude Code plugins for productivity workflows.
+Personal AI tooling stack: MCP servers for data access and productivity, plus Claude Code plugins for developer workflows.
 
-## Services
+## What's Included
 
-| Service | Port | Description |
+### MCP Servers
+
+| Name | Scope | Description |
 |---|---|---|
-| devlake-mysql-local | 17300 | Read-only MCP proxy for local DevLake MySQL |
-| devlake-mysql-staging | 17310 | Read-only MCP proxy for Konflux staging RDS |
-| devlake-mysql-prod | 17320 | Read-only MCP proxy for Konflux prod RDS |
-| notebooklm-mcp | 17200 | NotebookLM MCP server |
-| workspace-mcp | 17150 | Google Workspace MCP (Gmail, Drive, Calendar, Docs, Sheets) |
+| devlake-mysql-local | project | Read-only SQL access to local DevLake MySQL |
+| devlake-mysql-staging | project | Read-only SQL access to Konflux staging RDS |
+| devlake-mysql-prod | project | Read-only SQL access to Konflux prod RDS |
+| notebooklm | user | NotebookLM (notebooklm.google.com) |
+| workspace-mcp | user | Google Workspace — Gmail, Drive, Calendar, Docs, Sheets, Slides, Forms |
 
-## Getting started with Claude Code
+**User-scoped** MCPs are registered once globally via `/ai-stack:bootstrap`.
+**Project-scoped** MCPs are registered per-project via `/ai-stack:project-init`.
 
-**1. Register the marketplace and install the ai-stack plugin:**
+### Plugins
 
-```
+| Plugin | Description |
+|---|---|
+| ai-stack | Stack lifecycle: bootstrap, up/down/status, project-init, modify |
+| dev | Developer workflows: code review (CodeRabbit), git workflow with PR gates, language coding agents |
+| track | Track decisions and work in external systems: Jira, Google Docs, Google Drive |
+| quarterly | Quarterly review: gather activity data from Gmail, Jira, and Drive; generate structured reflection |
+
+### Skills
+
+| Skill | Description |
+|---|---|
+| `/ai-stack:bootstrap` | Full machine setup — runtimes, LSP plugins, Claude plugins, MCP servers |
+| `/ai-stack:up` | Start the container stack (idempotent) |
+| `/ai-stack:down` | Stop the container stack |
+| `/ai-stack:status` | Show service health and endpoints |
+| `/ai-stack:project-init` | Initialise a project directory (CLAUDE.md, AGENTS.md, project MCPs) |
+| `/ai-stack:modify` | Add, update, or remove a plugin/skill/MCP in the registry |
+| `/dev:git-workflow` | Branch lifecycle and PR/MR creation with approval gates (GitHub + GitLab) |
+| `/dev:review-cr` | Run CodeRabbit CLI review on committed changes |
+| `/track:jira` | Create or update a Jira issue |
+| `/track:gdrive-doc` | Create or update a Google Doc in the right Drive location |
+| `/track:gdrive-organize` | Reorganize a Google Drive based on a structure document |
+| `/quarterly:prep` | Gather activity data from Gmail, Jira, and Drive for a quarter |
+| `/quarterly:connect` | Guide a structured quarterly reflection |
+
+## Installation
+
+**1. Register the marketplace and install plugins:**
+
+```bash
 claude plugin marketplace add https://github.com/kpiwko/ai-stack.git --scope user
 claude plugin install ai-stack@ai-stack
 ```
@@ -27,43 +59,51 @@ claude plugin install ai-stack@ai-stack
 /ai-stack:bootstrap
 ```
 
-Bootstrap creates `.env` from the template (if missing), installs runtimes (uv, pnpm,
-rustup), LSP plugins (gopls, pyright, typescript-lsp, rust-analyzer), Claude plugins
-(superpowers, context7, atlassian, dev, track, quarterly), and registers MCP servers
-with Claude Code.
+Bootstrap installs runtimes (uv, pnpm, rustup), LSP plugins (gopls, pyright,
+typescript-lsp, rust-analyzer), Claude plugins (superpowers, context7, atlassian,
+dev, track, quarterly), and registers user-scoped MCP servers.
 
-If `.env` has placeholder values, bootstrap will list them. Edit `.env` with your
-secrets (Google OAuth credentials, database passwords, etc.) and run
-`/ai-stack:up` to start the services.
+**3. Edit `.env` with your secrets:**
 
-**Updating plugins:**
+Bootstrap creates `.env` from a template if missing. Fill in placeholder values —
+Google OAuth credentials, database passwords, MCP secret keys. The template lists
+every variable with comments.
 
-```bash
-claude plugin marketplace update ai-stack
-claude plugin update ai-stack@ai-stack
+**4. Start the services:**
+
+```
+/ai-stack:up
 ```
 
-Restart Claude Code after updating for changes to take effect.
+## Per-Project Setup
 
-## Just recipes
+Run `/ai-stack:project-init` inside any project directory. It will:
+
+- Copy `CLAUDE.md` and `AGENTS.md` templates (skips if already present)
+- Offer to register project-scoped MCP servers (devlake-mysql-*)
+- Ensure `.mcp.json` is in `.gitignore` (it contains expanded bearer tokens)
+
+## MCP Authentication
+
+### NotebookLM
+
+On first run (or when cookies expire), authenticate via the bundled VNC browser:
 
 ```bash
-just lince-bootstrap             # install or update LINCE toolkit (agent-sandbox, lince-dashboard)
-just lince                       # launch the LINCE dashboard
-
-just openshell-bootstrap         # build OpenShell gateway + sideload image, start gateway, register provider
-just openshell-bootstrap force       # force rebuild even if binaries/image already exist
-just openshell                   # generate Vertex AI wrapper and launch Claude Code in a sandbox
-just openshell-teardown          # delete sandboxes, stop gateway, clean up staging files
+open http://localhost:17201/vnc.html
+podman exec -it ai-stack-notebooklm-mcp-1 nlm login
 ```
 
-Stack lifecycle (`up`, `down`, `status`) is handled by the `/ai-stack:up` and `/ai-stack:down` Claude skills.
+### workspace-mcp
 
-## devlake-mysql-local
+On first run, make any Google Workspace tool call — the server returns a clickable
+OAuth URL. Complete the Google OAuth flow in your browser. Credentials are stored in
+`~/.config/workspace-mcp/` and reused on subsequent runs.
+
+## DevLake Local Setup
 
 Connects to a DevLake MySQL instance running on the host at port 3306. Start DevLake's
-MySQL service first, then register this MCP via `/ai-stack:project-init`. The command
-reads `$DEVLAKE_LOCAL_MCP_SECRET_KEY` from the environment — make sure `.env` is sourced first.
+MySQL service first, then register this MCP via `/ai-stack:project-init`.
 
 **Optional: connect via shared Podman network instead of host port**
 
@@ -89,89 +129,16 @@ that network and reach MySQL by container name — no host port exposure needed.
        MYSQL_HOST: mysql   # replace with DevLake's MySQL container name
    ```
 
-## notebooklm-mcp
-
-On first run (or when cookies expire), authenticate via the bundled VNC browser:
+## Updating
 
 ```bash
-open http://localhost:17201/vnc.html
-podman exec -it ai-stack-notebooklm-mcp-1 nlm login
+claude plugin marketplace update ai-stack
+claude plugin update ai-stack@ai-stack
 ```
 
-## workspace-mcp
+Restart Claude Code after updating for changes to take effect.
 
-On first run, make any Google Workspace tool call — the server returns a clickable OAuth
-URL. Complete the Google OAuth flow in your browser. Credentials are stored in
-`~/.config/workspace-mcp/` and reused on subsequent runs.
-
-## Agent sandboxes (experimental)
-
-Running AI coding agents in isolated sandboxes is an active area. Two separate experimental
-approaches are available here; neither is production-ready. See also
-[OpenKaiden](https://openkaiden.ai/) — a desktop application that runs AI coding agents in
-isolated sandboxes with enterprise governance controls.
-
-### LINCE (Zellij dashboard + bwrap/nono sandbox)
-
-> **Experimental.** LINCE is a standalone toolkit and is not yet integrated with OpenShell.
-> It uses `bubblewrap` (Linux) or `nono` (macOS) for filesystem/process isolation and
-> Zellij for multi-agent session management.
-
-Install or update via just:
-
-```bash
-just lince-bootstrap
-```
-
-This runs the interactive quickstart installer from the local `lince/` checkout, installing
-`agent-sandbox`, the `lince-dashboard` Zellij plugin, and supporting scripts. Launch the
-dashboard with `just lince`.
-
-### OpenShell (Podman + network policy enforcement)
-
-> **Experimental.** Running Claude Code in an OpenShell sandbox with Vertex AI currently
-> requires a manual credential wrapper. This is a workaround until OpenShell adds native
-> Vertex AI support (tracked in NVIDIA/OpenShell issue #472). Once that lands, the workflow
-> simplifies to `openshell sandbox create -- claude` with a configured provider.
-
-Set up via `just` goals (not the plugin — OpenShell setup requires build tools and a running
-gateway, which the plugin cannot manage):
-
-```bash
-# One-time setup (or after OpenShell git pull):
-just openshell-bootstrap
-
-# Each session:
-just openshell
-
-# Tear everything down:
-just openshell-teardown
-```
-
-`openshell/policy.yaml` grants sandbox network access to all MCP services in this stack.
-Local services are reached via `host.containers.internal` (injected by the Podman driver).
-
-Gateway logs go to `/tmp/openshell-gateway.log`. See `openshell/bootstrap.md` for full
-setup instructions and known issues.
-
-## Agent readiness
-
-This repo includes an [AgentReady](https://github.com/ambient-code/agentready) assessment
-that scores how well the codebase supports AI coding agents. Reports live in `.agentready/`.
-
-To regenerate:
-
-```bash
-mkdir -p .agentready
-podman run --rm \
-  -v $(pwd):/repo:ro \
-  -v $(pwd)/.agentready:/reports \
-  ghcr.io/ambient-code/agentready:latest assess /repo --output-dir /reports
-```
-
-The latest report is at `.agentready/report-latest.md` (or `.html` for the full version).
-
-## macOS notes
+## macOS Notes
 
 - Named volumes are managed inside the Podman VM — data persists across restarts.
 - `host.containers.internal` resolves to the macOS host from inside containers.

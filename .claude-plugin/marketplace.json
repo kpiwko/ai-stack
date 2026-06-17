@@ -17,20 +17,20 @@
     {
       "name": "dev",
       "source": "./plugins/dev",
-      "description": "Developer workflow tools: code review via CodeRabbit CLI, language coding agents (Go, Python, TypeScript).",
-      "version": "0.1.0"
+      "description": "Developer workflow tools: code review via CodeRabbit CLI, git workflow with PR gates, language coding agents.",
+      "version": "0.2.0"
     },
     {
       "name": "track",
       "source": "./plugins/track",
       "description": "Track decisions and work in external systems: Jira issues, Google Docs, Google Drive organization.",
-      "version": "0.1.0"
+      "version": "0.1.2"
     },
     {
       "name": "quarterly",
       "source": "./plugins/quarterly",
       "description": "Quarterly review workflow: gather activity data from Gmail, Jira, and Drive; generate a structured quarterly reflection.",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ]
 }
