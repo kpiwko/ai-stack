@@ -67,7 +67,7 @@ services:
     ports:
       - "17310:3000"
     volumes:
-      - ./certs/rds-combined-ca-bundle.pem:/etc/ssl/rds-ca.pem:ro
+      - ./certs/rds-combined-ca-bundle.pem:/etc/ssl/rds-ca.pem:ro,z
     environment:
       MYSQL_HOST: ${DEVLAKE_STAGING_MYSQL_HOST}
       MYSQL_PORT: ${DEVLAKE_STAGING_MYSQL_PORT:-3306}
@@ -99,7 +99,7 @@ services:
     ports:
       - "17320:3000"
     volumes:
-      - ./certs/rds-combined-ca-bundle.pem:/etc/ssl/rds-ca.pem:ro
+      - ./certs/rds-combined-ca-bundle.pem:/etc/ssl/rds-ca.pem:ro,z
     environment:
       MYSQL_HOST: ${DEVLAKE_PROD_MYSQL_HOST}
       MYSQL_PORT: ${DEVLAKE_PROD_MYSQL_PORT:-3306}
