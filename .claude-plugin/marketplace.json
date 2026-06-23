@@ -12,7 +12,7 @@
       "name": "ai-stack",
       "source": "./plugins/ai-stack",
       "description": "Maintenance commands for ai-stack repos: scaffold services, install plugins/skills/MCPs.",
-      "version": "0.18.0"
+      "version": "0.19.0"
     },
     {
       "name": "dev",
