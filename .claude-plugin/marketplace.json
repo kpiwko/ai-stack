@@ -12,7 +12,7 @@
       "name": "ai-stack",
       "source": "./plugins/ai-stack",
       "description": "Maintenance commands for ai-stack repos: scaffold services, install plugins/skills/MCPs.",
-      "version": "0.20.0"
+      "version": "0.21.0"
     },
     {
       "name": "dev",
@@ -24,7 +24,7 @@
       "name": "track",
       "source": "./plugins/track",
       "description": "Track decisions and work in external systems: Jira issues, Google Docs, Google Drive organization.",
-      "version": "0.1.2"
+      "version": "0.2.0"
     },
     {
       "name": "quarterly",
