@@ -1,5 +1,8 @@
 ---
-description: Create or update a Jira issue. Reads JIRA_URL and JIRA_PROJECT from environment.
+description: >-
+  Create or update a Jira issue. Use when the user mentions creating, filing,
+  opening, tracking, or logging work in Jira/JIRA, or asks to make a ticket
+  for something. Reads JIRA_URL and JIRA_PROJECT from environment.
 argument-hint: "[Epic|Story|Task|Spike|Sub-task] <description>"
 ---
 

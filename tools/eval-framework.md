@@ -35,17 +35,20 @@ real commands), so it uses `--add-dir <repo_root>` instead.
 
 ## Running evals
 
+Eval configs are auto-discovered from `plugins/*/evals/promptfooconfig-*.yaml`.
+
 ```bash
-# All scenarios for one skill
+# All scenarios for one skill (execution or activation)
 just eval up
+just eval jira-activation
 
 # Filter by description substring
 just eval up "Fresh directory"
 
 # Pass@k (repeat each test 3 times, pass if any succeeds)
-just eval up "" 3
+just eval jira-activation "" 3
 
-# All skills
+# All skills across all plugins
 just eval
 ```
 
@@ -84,9 +87,69 @@ Graders are written as inline JavaScript in the `assert` block of each promptfoo
 
 > Fields are additive — see the relevant `promptfooconfig-<skill>.yaml` for the full field list used by each scenario.
 
+## Activation evals
+
+Activation evals test whether Claude would **invoke** the right skill given a
+natural language prompt — distinct from execution evals which test what happens
+once a skill runs.
+
+The runner (`tools/run-activation-eval.py`) auto-discovers skill descriptions
+from `plugins/*/skills/*/SKILL.md` frontmatter and builds a skills listing. It
+asks Claude which skill matches a given user message, then emits:
+
+```json
+{"output": "<raw text>", "invoked_skill": "<skill name or none>"}
+```
+
+Activation eval configs live alongside execution evals and follow the naming
+convention `promptfooconfig-<name>-activation.yaml`. Graders check
+`r.invoked_skill` against the expected value.
+
+### Writing activation scenarios
+
+Each scenario provides a natural language user message and asserts which skill
+should (or should not) be invoked:
+
+```yaml
+tests:
+  - description: "positive: user asks to create a Jira ticket"
+    vars:
+      scenario: "can we create a JIRA to track this work?"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill !== 'track:jira')
+            return { pass: false, score: 0, reason: `expected track:jira, got ${r.invoked_skill}` };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "negative: unrelated request"
+    vars:
+      scenario: "can you write a README?"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill === 'track:jira')
+            return { pass: false, score: 0, reason: 'false positive' };
+          return { pass: true, score: 1, reason: 'ok' };
+```
+
+Use pass@3 (`just eval <name> "" 3`) for reliability — LLM-as-judge results
+can vary between runs.
+
 ## Adding a new skill to evals
 
-1. Create `plugins/ai-stack/evals/promptfooconfig-<skill>.yaml`
+### Execution evals
+
+1. Create `plugins/<plugin>/evals/promptfooconfig-<skill>.yaml`
 2. Add scenario setup cases to `tools/run-skill.py` → `setup_scenario()`
 3. If the skill produces new filesystem artifacts, add fields to `collect_state()`
-4. Add the skill name to the `just eval` recipe in `justfile`
+
+### Activation evals
+
+1. Create `plugins/<plugin>/evals/promptfooconfig-<skill>-activation.yaml`
+2. Add positive scenarios (should invoke the skill) and negative scenarios (should not)
+3. If the skill description doesn't trigger reliably, add "Use when..." cues to the SKILL.md frontmatter
+
+Both types are auto-discovered by `just eval` from `plugins/*/evals/promptfooconfig-*.yaml`.
