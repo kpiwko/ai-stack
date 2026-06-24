@@ -108,24 +108,33 @@ lince-bootstrap force='':
 lince:
     zd
 
-# Run ai-stack skill evals with promptfoo.
-# skill: up|down|bootstrap|project-init|status|all (default: all)
+# Run skill evals with promptfoo.
+# Auto-discovers promptfooconfig-*.yaml across all plugins/*/evals/ directories.
+# skill: config suffix (e.g. up, jira-activation) or 'all' (default: all)
 # pattern: substring filter on test description (default: run all)
 # repeat: run each test N times for pass@k (default: 1)
 eval skill='all' pattern='' repeat='1':
     #!/bin/bash
     set -euo pipefail
-    skills=( up down bootstrap project-init status )
-    [[ "{{skill}}" != "all" ]] && skills=( "{{skill}}" )
-    eval_dir="plugins/ai-stack/evals"
-    for s in "${skills[@]}"; do
-        cfg="${eval_dir}/promptfooconfig-${s}.yaml"
-        [[ -f "$cfg" ]] || { echo "No eval config for skill: $s"; continue; }
-        args=( --config "promptfooconfig-${s}.yaml" --no-cache )
+    export NODE_OPTIONS="--disable-warning=ExperimentalWarning"
+    found=0
+    for cfg in plugins/*/evals/promptfooconfig-*.yaml; do
+        [[ -f "$cfg" ]] || continue
+        name="${cfg##*promptfooconfig-}"
+        name="${name%.yaml}"
+        [[ "{{skill}}" != "all" && "$name" != "{{skill}}" ]] && continue
+        found=1
+        eval_dir="$(dirname "$cfg")"
+        args=( --config "promptfooconfig-${name}.yaml" --no-cache )
         [[ -n "{{pattern}}" ]] && args+=( --filter-pattern "{{pattern}}" )
         [[ "{{repeat}}" != "1" ]] && args+=( --repeat "{{repeat}}" )
+        echo "=== eval: $name (${eval_dir}) ==="
         (cd "$eval_dir" && npx --yes promptfoo@latest eval "${args[@]}")
     done
+    if [[ "$found" -eq 0 ]]; then
+        echo "No eval config found for: {{skill}}"
+        exit 1
+    fi
 
 # Launch Claude Code in an OpenShell sandbox with Vertex AI credentials.
 # Generates claude-vertex-wrapper dynamically from current env vars — no credentials stored in repo.

@@ -25,4 +25,4 @@ just eval "" "" 3               # all skills, pass@3
 just eval                       # all skills, all scenarios
 ```
 
-See `evals/framework.md` for conventions and the TDD cycle.
+See `tools/eval-framework.md` at the repo root for conventions and the TDD cycle.

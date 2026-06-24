@@ -1,0 +1,92 @@
+description: /track:jira activation evals — does Claude invoke the skill for natural language prompts?
+
+prompts:
+  - '{{scenario}}'
+
+providers:
+  - 'exec: python3 ../../../tools/run-activation-eval.py jira-activation'
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: |
+        try { JSON.parse(output); return true; }
+        catch(e) { return { pass: false, score: 0, reason: 'runner did not emit valid JSON: ' + output.slice(0,300) }; }
+
+tests:
+  - description: "explicit create: 'can we create a JIRA to track this work?'"
+    vars:
+      scenario: "can we create a JIRA to track this work?"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill !== 'track:jira')
+            return { pass: false, score: 0, reason: `expected track:jira, got ${r.invoked_skill}` };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "file a ticket: 'I need to file a ticket for this bug'"
+    vars:
+      scenario: "I need to file a ticket for this bug in Jira"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill !== 'track:jira')
+            return { pass: false, score: 0, reason: `expected track:jira, got ${r.invoked_skill}` };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "open issue: 'let's open a Jira issue for this feature'"
+    vars:
+      scenario: "let's open a Jira issue for this feature"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill !== 'track:jira')
+            return { pass: false, score: 0, reason: `expected track:jira, got ${r.invoked_skill}` };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "log work: 'can you log this in JIRA?'"
+    vars:
+      scenario: "can you log this in JIRA?"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill !== 'track:jira')
+            return { pass: false, score: 0, reason: `expected track:jira, got ${r.invoked_skill}` };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "track work: 'we should track this in Jira'"
+    vars:
+      scenario: "we should track this in Jira"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill !== 'track:jira')
+            return { pass: false, score: 0, reason: `expected track:jira, got ${r.invoked_skill}` };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "negative — project status (no Jira intent)"
+    vars:
+      scenario: "what's the status of the project?"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill === 'track:jira')
+            return { pass: false, score: 0, reason: 'false positive — invoked track:jira for unrelated prompt' };
+          return { pass: true, score: 1, reason: 'ok' };
+
+  - description: "negative — write a README (no Jira intent)"
+    vars:
+      scenario: "can you write a README for this project?"
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (r.invoked_skill === 'track:jira')
+            return { pass: false, score: 0, reason: 'false positive — invoked track:jira for unrelated prompt' };
+          return { pass: true, score: 1, reason: 'ok' };
