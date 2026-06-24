@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    check-plugin-versions:
+      glob: "plugins/*/.claude-plugin/plugin.json"
+      run: python3 tools/hooks/check_plugin_versions.py
