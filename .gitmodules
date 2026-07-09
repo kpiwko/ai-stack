@@ -1,6 +1,0 @@
-[submodule "mcp/notebooklm-mcp"]
-	path = mcp/notebooklm-mcp
-	url = git@github.com:kpiwko/notebooklm-mcp.git
-[submodule "mcp/workspace-mcp"]
-	path = mcp/workspace-mcp
-	url = git@github.com:kpiwko/workspace-mcp.git
