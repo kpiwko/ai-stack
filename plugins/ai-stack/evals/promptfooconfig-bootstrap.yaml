@@ -15,7 +15,14 @@ providers:
 
 defaultTest:
   options:
-    provider: anthropic:messages:claude-haiku-4-5-20251001
+    provider:
+      text:
+        id: vertex:claude-haiku-4-5-20251001
+        config:
+          projectId: "{{env.ANTHROPIC_VERTEX_PROJECT_ID}}"
+          region: global
+          anthropic_version: "vertex-2023-10-16"
+          max_tokens: 1024
   assert:
     - type: javascript
       value: |
