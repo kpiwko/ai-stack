@@ -110,41 +110,42 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
     elif key == "project-init/optional-skill":
         pass
     elif skill == "git-workflow":
+        _git = dict(check=True, capture_output=True)
         if scenario in ("start-single", "start-fork", "pr-single", "review-list"):
             origin_bare = eval_dir / "origin.git"
-            subprocess.run(["git", "init", "--bare", str(origin_bare)], check=True)
+            subprocess.run(["git", "init", "--bare", str(origin_bare)], **_git)
 
             repo = eval_dir / "repo"
-            subprocess.run(["git", "init", str(repo)], check=True)
-            subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", str(origin_bare)], check=True)
+            subprocess.run(["git", "init", str(repo)], **_git)
+            subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", str(origin_bare)], **_git)
 
             (repo / "README.md").write_text("# Test repo\n")
-            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-m", "init"], check=True)
-            subprocess.run(["git", "-C", str(repo), "push", "-u", "origin", "main"], check=True)
+            subprocess.run(["git", "-C", str(repo), "add", "."], **_git)
+            subprocess.run(["git", "-C", str(repo), "commit", "-m", "init"], **_git)
+            subprocess.run(["git", "-C", str(repo), "push", "-u", "origin", "main"], **_git)
 
         if scenario == "start-fork":
             upstream_bare = eval_dir / "upstream.git"
-            subprocess.run(["git", "init", "--bare", str(upstream_bare)], check=True)
+            subprocess.run(["git", "init", "--bare", str(upstream_bare)], **_git)
             repo = eval_dir / "repo"
-            subprocess.run(["git", "-C", str(repo), "remote", "add", "upstream", str(upstream_bare)], check=True)
-            subprocess.run(["git", "-C", str(repo), "push", "upstream", "main"], check=True)
+            subprocess.run(["git", "-C", str(repo), "remote", "add", "upstream", str(upstream_bare)], **_git)
+            subprocess.run(["git", "-C", str(repo), "push", "upstream", "main"], **_git)
 
         if scenario == "pr-single":
             repo = eval_dir / "repo"
-            subprocess.run(["git", "-C", str(repo), "checkout", "-b", "feat/test-feature"], check=True)
+            subprocess.run(["git", "-C", str(repo), "checkout", "-b", "feat/test-feature"], **_git)
             (repo / "feature.txt").write_text("new feature\n")
-            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: add test feature"], check=True)
+            subprocess.run(["git", "-C", str(repo), "add", "."], **_git)
+            subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: add test feature"], **_git)
 
         if scenario == "review-list":
             repo = eval_dir / "repo"
-            subprocess.run(["git", "-C", str(repo), "checkout", "-b", "feat/other-work"], check=True)
+            subprocess.run(["git", "-C", str(repo), "checkout", "-b", "feat/other-work"], **_git)
             (repo / "other.txt").write_text("other work\n")
-            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: other work"], check=True)
-            subprocess.run(["git", "-C", str(repo), "push", "origin", "feat/other-work"], check=True)
-            subprocess.run(["git", "-C", str(repo), "checkout", "main"], check=True)
+            subprocess.run(["git", "-C", str(repo), "add", "."], **_git)
+            subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: other work"], **_git)
+            subprocess.run(["git", "-C", str(repo), "push", "origin", "feat/other-work"], **_git)
+            subprocess.run(["git", "-C", str(repo), "checkout", "main"], **_git)
     else:
         die(f"Unknown scenario: {key}")
 
