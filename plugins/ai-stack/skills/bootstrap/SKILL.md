@@ -59,7 +59,7 @@ If `mise` is **not** installed and go or node are missing → stop immediately a
 ✗ <tool>: not found
   This skill cannot install <tool> directly.
   Install it from: <reason from bootstrap.yaml>
-  Or install mise first (brew install mise) and re-run /ai-stack:bootstrap.
+  Or install mise first (curl https://mise.run | sh) and re-run /ai-stack:bootstrap.
 ```
 
 Do not proceed to Step 2.
@@ -74,7 +74,7 @@ Do not proceed to Step 2.
    mise use --global python@3.12 node@20 go@1.24
    ```
    Record the global_runtimes command as run.
-3. If missing, or if `force` was passed → run its `install` command (`brew install mise`), record `installed`, then run:
+3. If missing, or if `force` was passed → run its `install` command (`curl https://mise.run | sh`), record `installed`, then run:
    ```bash
    mise use --global python@3.12 node@20 go@1.24
    ```
