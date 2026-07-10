@@ -12,7 +12,7 @@ version_manager:
   name: mise
   check: "command -v mise"
   required: false
-  install: "brew install mise"
+  install: "curl https://mise.run | sh"
   global_runtimes: "mise use --global python@3.12 node@24 go@1.24"
 
 languages:

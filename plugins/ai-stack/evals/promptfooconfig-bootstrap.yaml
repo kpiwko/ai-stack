@@ -69,6 +69,17 @@ tests:
             return { pass: true, score: 1, reason: 'ok' };
           return { pass: false, score: 0, reason: 'no evidence of force-reinstall in output' };
 
+  - description: "Cross-platform: no brew references in bootstrap output"
+    vars:
+      scenario: default
+    assert:
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (/brew install/i.test(r.output))
+            return { pass: false, score: 0, reason: 'bootstrap output references "brew install" — must use cross-platform installer' };
+          return { pass: true, score: 1, reason: 'ok' };
+
   - description: "Unset MCP env var: MCP skipped with reason shown"
     vars:
       scenario: default
