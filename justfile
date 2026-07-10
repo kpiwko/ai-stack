@@ -136,6 +136,10 @@ eval skill='all' pattern='' repeat='1':
         exit 1
     fi
 
+# Open the promptfoo web UI to browse eval results.
+evals-view:
+    npx --yes promptfoo@latest view
+
 # Launch Claude Code in an OpenShell sandbox with Vertex AI credentials.
 # Generates claude-vertex-wrapper dynamically from current env vars — no credentials stored in repo.
 # Requires env: OPENSHELL_DIR, ANTHROPIC_VERTEX_PROJECT_ID, CLAUDE_CODE_USE_VERTEX,
