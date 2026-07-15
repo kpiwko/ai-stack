@@ -17,7 +17,7 @@ defaultTest:
   options:
     provider:
       text:
-        id: vertex:claude-haiku-4-5-20251001
+        id: vertex:claude-sonnet-4-6
         config:
           projectId: "{{env.ANTHROPIC_VERTEX_PROJECT_ID}}"
           region: global

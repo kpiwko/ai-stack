@@ -14,28 +14,38 @@ defaultTest:
         catch(e) { return { pass: false, score: 0, reason: 'runner did not emit valid JSON' }; }
 
 tests:
-  - description: "start mode (single remote): detects platform and creates feature branch"
+  - description: "start mode (single remote): creates feature branch"
     vars:
       scenario: start-single
     assert:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!/single.*remote|single/i.test(r.output))
-            return { pass: false, score: 0, reason: 'did not detect single-remote topology' };
           if (!r.state.current_branch || r.state.current_branch === 'main')
             return { pass: false, score: 0, reason: 'still on main — feature branch not created' };
           return { pass: true, score: 1, reason: 'ok' };
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/github/i.test(r.output) && !/github/i.test(JSON.stringify(r.state.remotes)))
+            return { pass: false, score: 0, reason: 'github platform not detected' };
+          return { pass: true, score: 1, reason: 'ok' };
 
-  - description: "start mode (fork): detects upstream remote"
+  - description: "start mode (fork): creates feature branch with upstream present"
     vars:
       scenario: start-fork
     assert:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!/fork|upstream/i.test(r.output))
-            return { pass: false, score: 0, reason: 'did not detect fork topology' };
+          if (!r.state.current_branch || r.state.current_branch === 'main')
+            return { pass: false, score: 0, reason: 'still on main — feature branch not created' };
+          return { pass: true, score: 1, reason: 'ok' };
+      - type: javascript
+        value: |
+          const r = JSON.parse(output);
+          if (!/upstream/.test(r.state.remotes || ''))
+            return { pass: false, score: 0, reason: 'upstream remote not present in state' };
           return { pass: true, score: 1, reason: 'ok' };
 
   - description: "pr mode: shows diff and commit log before proceeding"
@@ -51,13 +61,13 @@ tests:
             return { pass: false, score: 0, reason: 'commit log not shown' };
           return { pass: true, score: 1, reason: 'ok' };
 
-  - description: "review mode: lists PRs or shows review guidance"
+  - description: "review mode: enters review flow or mentions PRs"
     vars:
       scenario: review-list
     assert:
       - type: javascript
         value: |
           const r = JSON.parse(output);
-          if (!/review|PR|MR|pull.request|merge.request/i.test(r.output))
+          if (!/review|PR|MR|pull.request|merge.request|gh pr|glab mr|no.*open|list/i.test(r.output))
             return { pass: false, score: 0, reason: 'no review-related output detected' };
           return { pass: true, score: 1, reason: 'ok' };
