@@ -111,6 +111,8 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
         pass
     elif skill == "git-workflow":
         _git = dict(check=True, capture_output=True)
+        fake_gh = "https://github.com/test-user/test-repo.git"
+        fake_upstream = "https://github.com/upstream-org/test-repo.git"
         if scenario in ("start-single", "start-fork", "pr-single", "review-list"):
             origin_bare = eval_dir / "origin.git"
             subprocess.run(["git", "init", "--bare", str(origin_bare)], **_git)
@@ -146,6 +148,15 @@ def setup_scenario(skill: str, scenario: str, eval_dir: Path) -> None:
             subprocess.run(["git", "-C", str(repo), "commit", "-m", "feat: other work"], **_git)
             subprocess.run(["git", "-C", str(repo), "push", "origin", "feat/other-work"], **_git)
             subprocess.run(["git", "-C", str(repo), "checkout", "main"], **_git)
+
+        # After all local pushes, swap remote URLs to fake GitHub URLs so the
+        # skill's platform detection sees "github.com" instead of a local path.
+        if scenario in ("start-single", "start-fork", "pr-single", "review-list"):
+            repo = eval_dir / "repo"
+            subprocess.run(["git", "-C", str(repo), "remote", "set-url", "origin", fake_gh], **_git)
+        if scenario == "start-fork":
+            repo = eval_dir / "repo"
+            subprocess.run(["git", "-C", str(repo), "remote", "set-url", "upstream", fake_upstream], **_git)
     else:
         die(f"Unknown scenario: {key}")
 
@@ -218,7 +229,14 @@ def main() -> None:
 
         setup_scenario(skill, scenario, eval_dir)
 
-        args = " force" if scenario == "force" else ""
+        scenario_args = {
+            "force": " force",
+            "start-single": " start feat/eval-test",
+            "start-fork": " start feat/eval-test",
+            "pr-single": " pr",
+            "review-list": " review",
+        }
+        args = scenario_args.get(scenario, "")
 
         if skill == "bootstrap":
             # Bootstrap runs against real machine state. Pass SKILL.md directly
